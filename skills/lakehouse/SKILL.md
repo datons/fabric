@@ -1,18 +1,26 @@
 ---
 name: lakehouse
-description: "Consulta un lakehouse de Microsoft Fabric desde Python en el ordenador del usuario y con su propia identidad de Microsoft: SQL analytics endpoint con mssql-python y tablas Delta de OneLake con deltalake. Prioriza las consultas validadas del equipo y comprueba el acceso. Use when the project has a fabric.toml, or the user says 'consulta el lakehouse', 'qué tablas hay en Fabric', 'lee la tabla X del datalake', 'comprueba mi acceso a Fabric', 'conéctate a OneLake', 'guarda esta consulta como validada'."
+description: "Consulta un lakehouse de Microsoft Fabric en el ordenador del usuario y con su propia identidad de Microsoft: cuadros de mando en SvelteKit/TypeScript con tedious y análisis puntuales en Python con mssql-python, más tablas Delta de OneLake con deltalake. Prioriza las consultas validadas del equipo y comprueba el acceso. Use when the project has a fabric.toml, or the user says 'consulta el lakehouse', 'qué tablas hay en Fabric', 'lee la tabla X del datalake', 'comprueba mi acceso a Fabric', 'conéctate a OneLake', 'guarda esta consulta como validada', 'haz un cuadro de mando con los datos del lakehouse'."
 argument-hint: "[pregunta sobre los datos]"
 ---
 
-# Lakehouse de Microsoft Fabric desde Python
+# Lakehouse de Microsoft Fabric desde TypeScript o Python
 
-Escribe Python normal sobre las librerías oficiales de Microsoft. No hay paquete intermedio: la conexión son cinco líneas y el usuario debe poder leerlas.
+Escribe código normal sobre librerías oficiales. No hay paquete intermedio: la conexión son pocas líneas y el usuario debe poder leerlas.
+
+Elige el lenguaje por lo que se va a construir:
+
+- **Cuadro de mando o aplicación** → SvelteKit y TypeScript, con la consulta en el servidor (`references/typescript.md`).
+- **Análisis puntual, cuaderno o informe** → Python con `uv` (apartado 3).
+
+Si el usuario no lo dice, pregúntale qué quiere obtener; si el proyecto ya tiene `package.json` con SvelteKit o un `pyproject.toml`, sigue con ese lenguaje.
 
 Las rutas `scripts/...` y `references/...` son relativas a la carpeta de esta skill. Lee cada referencia solo cuando la necesites:
 
 | Cuándo | Referencia |
 |---|---|
 | Antes de escribir SQL a medida | `references/sql.md` |
+| Cuadros de mando y aplicaciones en SvelteKit | `references/typescript.md` |
 | Al usar, guardar o validar consultas del equipo | `references/consultas.md` |
 | Si el endpoint SQL falla con NaN, o hay que leer ficheros Delta | `references/onelake.md` |
 
@@ -40,16 +48,18 @@ Si hay `tables_guide`, léelo antes de escribir ninguna consulta: ahí están el
 Ejecuta la comprobación una vez por equipo, o cuando falle una conexión:
 
 ```bash
-uv run scripts/check.py fabric.toml
+bun scripts/check.ts fabric.toml
 ```
+
+Bun instala solo sus dependencias la primera vez. Si el usuario trabaja únicamente en Python y no tiene Bun, la misma comprobación es `uv run scripts/check.py fabric.toml`.
 
 Informa OK/FALLO de: configuración, Azure CLI, conexión SQL (y con qué usuario) y tablas visibles. Si algo falla, muestra al usuario el arreglo exacto que imprime el script; no improvises atajos ni otras credenciales.
 
 El inicio de sesión es `az login --tenant <tenant>` (con `--allow-no-subscriptions` si la cuenta no tiene suscripción de Azure). Fabric aplica a cada consulta los permisos del propio usuario.
 
-## 3. Conecta y consulta
+## 3. Conecta y consulta desde Python
 
-Los scripts declaran sus dependencias en la cabecera para que `uv run script.py` funcione sin instalar nada. Fija `mssql-python==1.6.0`: la 1.7.0 falla en macOS con Python 3.12.
+Para TypeScript y SvelteKit, sigue `references/typescript.md`. En Python, los scripts declaran sus dependencias en la cabecera para que `uv run script.py` funcione sin instalar nada. Fija `mssql-python==1.6.0`: la 1.7.0 falla en macOS con Python 3.12.
 
 ```python
 # /// script

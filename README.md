@@ -1,8 +1,8 @@
 # fabric
 
-Plugin for Claude Code and Codex to work with a Microsoft Fabric lakehouse from Python on your own machine, with your own Microsoft identity. Fabric applies your existing permissions to every query; nothing is stored besides your Azure CLI session.
+Plugin for Claude Code and Codex to work with a Microsoft Fabric lakehouse from TypeScript or Python on your own machine, with your own Microsoft identity. Fabric applies your existing permissions to every query; nothing is stored besides your Azure CLI session.
 
-There is no wrapper library and no MCP server: Claude writes plain Python against Microsoft's official libraries (`mssql-python` for the SQL analytics endpoint, `deltalake` for OneLake Delta tables), following the skill `/fabric:lakehouse`.
+There is no wrapper library and no MCP server: Claude writes plain code against official libraries, TypeScript (`tedious` in a SvelteKit server) for dashboards and apps, Python (`mssql-python`, `deltalake` for OneLake Delta tables) for ad hoc analysis, following the skill `/fabric:lakehouse`.
 
 ## Install
 
@@ -26,7 +26,7 @@ It is also listed in the [`datons/agent-plugins`](https://github.com/datons/agen
 ## Requirements
 
 - Azure CLI, signed in with `az login --tenant <tenant-id>`.
-- `uv`, to run scripts with inline dependencies.
+- Bun, which runs the access check and the query validator and installs their dependencies on first run. `uv` for Python work; the same checks also exist as `check.py` and `validate.py`.
 - Read access to the lakehouse's SQL analytics endpoint, granted by your IT team.
 
 ## Start a team repository
@@ -54,6 +54,7 @@ Claude Code (terminal, IDE, and the Code tab of Claude Desktop) and Codex. Not i
 ## Development
 
 ```bash
+bun install && bun run check && bun test tests
 uvx ruff check skills tests
 uv run --python 3.12 --with pytest pytest -q tests
 claude plugin validate .

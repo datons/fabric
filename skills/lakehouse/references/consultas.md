@@ -30,8 +30,10 @@ SELECT ...
 ## Validar
 
 ```bash
-uv run scripts/validate.py fabric.toml [fichero.sql ...]
+bun scripts/validate.ts fabric.toml [fichero.sql ...]
 ```
+
+Con solo Python: `uv run scripts/validate.py fabric.toml [fichero.sql ...]`. Las dos versiones aplican las mismas reglas.
 
 Ejecuta cada consulta con sus valores de `example` y falla si:
 

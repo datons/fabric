@@ -1,8 +1,8 @@
 {
   "$schema": "https://docs.claude.com/claude-plugin/plugin.json",
   "name": "fabric",
-  "description": "Lakehouses de Microsoft Fabric desde Python con tu propia identidad de Microsoft: SQL analytics endpoint con mssql-python, Delta en OneLake con deltalake, comprobación de acceso y consultas validadas por equipo.",
-  "version": "0.2.0",
+  "description": "Lakehouses de Microsoft Fabric con tu propia identidad de Microsoft: cuadros de mando en SvelteKit/TypeScript (tedious) y análisis en Python (mssql-python), Delta en OneLake con deltalake, comprobación de acceso y consultas validadas por equipo.",
+  "version": "0.3.0",
   "author": {
     "name": "Datons",
     "email": "hola@datons.com",
@@ -18,6 +18,8 @@
     "microsoft",
     "sql",
     "delta",
-    "python"
+    "python",
+        "typescript",
+        "sveltekit"
   ]
 }

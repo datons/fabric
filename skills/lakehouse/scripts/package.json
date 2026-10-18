@@ -1,0 +1,10 @@
+{
+  "name": "fabric-lakehouse-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Dependencias de check.ts y validate.ts. Bun las instala solo la primera vez que se ejecutan.",
+  "dependencies": {
+    "@azure/identity": "4.14.0",
+    "tedious": "20.3.8"
+  }
+}

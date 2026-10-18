@@ -6,12 +6,12 @@
     "email": "hola@datons.com",
     "url": "https://datons.com"
   },
-  "description": "Plugin fabric de datons: lakehouses de Microsoft Fabric desde Python.",
+  "description": "Plugin fabric de datons: lakehouses de Microsoft Fabric desde TypeScript y Python.",
   "plugins": [
     {
       "name": "fabric",
       "source": "./",
-      "description": "Lakehouses de Microsoft Fabric desde Python con tu propia identidad de Microsoft: SQL analytics endpoint con mssql-python, Delta en OneLake con deltalake, comprobación de acceso y consultas validadas por equipo.",
+      "description": "Lakehouses de Microsoft Fabric con tu propia identidad de Microsoft: cuadros de mando en SvelteKit/TypeScript (tedious) y análisis en Python (mssql-python), Delta en OneLake con deltalake, comprobación de acceso y consultas validadas por equipo.",
       "category": "data",
       "tags": [
         "fabric",
@@ -20,7 +20,9 @@
         "microsoft",
         "sql",
         "delta",
-        "python"
+        "python",
+        "typescript",
+        "sveltekit"
       ]
     }
   ]
