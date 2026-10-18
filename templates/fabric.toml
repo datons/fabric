@@ -1,0 +1,9 @@
+# Configuración del lakehouse para este proyecto. No contiene secretos: los valores te los da tu equipo de IT.
+[fabric]
+tenant = "<tenant-id>"
+sql_server = "<id>.datawarehouse.fabric.microsoft.com"
+database = "<nombre del lakehouse>"
+workspace_id = "<guid del workspace>"
+lakehouse_id = "<guid del lakehouse>"
+tables_guide = "docs/tablas.md"
+queries_dir = "consultas"

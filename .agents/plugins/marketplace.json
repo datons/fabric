@@ -1,0 +1,20 @@
+{
+  "name": "datons-fabric",
+  "interface": {
+    "displayName": "datons · fabric"
+  },
+  "plugins": [
+    {
+      "name": "fabric",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Data"
+    }
+  ]
+}

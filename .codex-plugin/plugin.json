@@ -1,0 +1,22 @@
+{
+  "name": "fabric",
+  "version": "0.2.0",
+  "description": "Lakehouses de Microsoft Fabric desde Python con tu propia identidad de Microsoft: SQL analytics endpoint con mssql-python, Delta en OneLake con deltalake, comprobación de acceso y consultas validadas por equipo.",
+  "author": {
+    "name": "Datons",
+    "email": "hola@datons.com",
+    "url": "https://datons.com"
+  },
+  "homepage": "https://github.com/datons/fabric",
+  "license": "MIT",
+  "keywords": [
+    "fabric",
+    "lakehouse",
+    "onelake",
+    "microsoft",
+    "sql",
+    "delta",
+    "python"
+  ],
+  "skills": "./skills/"
+}

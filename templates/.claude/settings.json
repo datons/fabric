@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "datons-fabric": {
+      "source": {
+        "source": "github",
+        "repo": "datons/fabric"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "fabric@datons-fabric": true
+  }
+}
