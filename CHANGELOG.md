@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- `templates/docs/marca.md`: la identidad visual del equipo (colores, tipografía, logotipo) para informes y cuadros de mando, junto a la guía de tablas.
+
 ## 0.3.0
 
 - TypeScript junto a Python: `references/typescript.md` enseña un módulo de servidor SvelteKit con `tedious` y la sesión de Azure CLI para cuadros de mando; Python queda para análisis puntuales.

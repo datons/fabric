@@ -38,6 +38,7 @@ your-team-queries/
 ├── .claude/settings.json   # installs this plugin for anyone who opens the repo
 ├── fabric.toml             # tenant, SQL endpoint, lakehouse
 ├── docs/tablas.md          # what each table means: grain, units, traps
+├── docs/marca.md           # brand for reports: colours, typeface, logo
 └── consultas/*.sql         # the team's validated queries
 ```
 

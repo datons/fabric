@@ -1,6 +1,6 @@
 {
   "name": "fabric",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Lakehouses de Microsoft Fabric con tu propia identidad de Microsoft: cuadros de mando en SvelteKit/TypeScript (tedious) y análisis en Python (mssql-python), Delta en OneLake con deltalake, comprobación de acceso y consultas validadas por equipo.",
   "author": {
     "name": "Datons",
