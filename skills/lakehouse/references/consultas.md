@@ -4,7 +4,7 @@ Una consulta validada es la respuesta acordada por el equipo a una pregunta. Viv
 
 ## Usarlas
 
-- Ejecútala tal cual con `query(Path(fichero).read_text(), params)`, con los parámetros en el orden de `params`.
+- Ejecútala tal cual con `query(Path(fichero).read_text(), params, lakehouse)`, con los parámetros en el orden de `params` y el lakehouse de su línea `lakehouse` si la tiene.
 - Di qué fichero has usado y si está validada (`validated` con fecha) o pendiente.
 - No cambies su SQL sobre la marcha. Si necesita un cambio, propón el cambio en el fichero.
 
@@ -14,7 +14,7 @@ Si el usuario va a reutilizar una consulta a medida, ofrece guardarla en `querie
 
 ## Formato
 
-Fichero `.sql` con una cabecera de comentarios. Todas las claves son obligatorias salvo `notes`:
+Fichero `.sql` con una cabecera de comentarios. Todas las claves son obligatorias salvo `lakehouse` y `notes`:
 
 ```sql
 -- description: qué pregunta responde, en una frase
@@ -23,9 +23,12 @@ Fichero `.sql` con una cabecera de comentarios. Todas las claves son obligatoria
 -- grain: una fila por <col> y <col>
 -- validated: AAAA-MM-DD o pendiente
 -- reviewer: equipo o rol que la valida
+-- lakehouse: nombre del bloque en fabric.toml (sin esta línea, el default)
 -- notes: trampas que resuelve
 SELECT ...
 ```
+
+Con un solo lakehouse, omite `lakehouse`. Con varios, ponlo siempre: la misma tabla puede existir en desarrollo y en producción con datos distintos.
 
 ## Validar
 

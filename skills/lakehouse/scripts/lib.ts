@@ -2,14 +2,27 @@
 import { AzureCliCredential } from '@azure/identity';
 import { Connection, Request, TYPES } from 'tedious';
 
-export interface FabricConfig {
-	tenant: string;
+export interface Lakehouse {
 	sql_server: string;
 	database: string;
 	workspace_id?: string;
 	lakehouse_id?: string;
+}
+
+/* One lakehouse is the connection target; tenant comes from the project. */
+export interface FabricConfig extends Lakehouse {
+	name: string;
+	tenant: string;
 	tables_guide?: string;
 	queries_dir?: string;
+}
+
+export interface ProjectConfig {
+	tenant: string;
+	default?: string;
+	tables_guide?: string;
+	queries_dir?: string;
+	lakehouses: Record<string, Lakehouse>;
 }
 
 export interface Result {
@@ -19,8 +32,30 @@ export interface Result {
 
 export const REQUIRED = ['description', 'params', 'example', 'grain', 'validated', 'reviewer'] as const;
 
-export async function readConfig(path: string): Promise<FabricConfig> {
-	return (Bun.TOML.parse(await Bun.file(path).text()) as { fabric: FabricConfig }).fabric;
+/* `[fabric.lakehouses.<name>]` tables, or the single-lakehouse form with sql_server and database directly under `[fabric]`, which becomes one lakehouse named after its database. */
+export function parseConfig(text: string): ProjectConfig {
+	const { lakehouses, sql_server, database, workspace_id, lakehouse_id, ...rest } = (Bun.TOML.parse(text) as { fabric: Omit<ProjectConfig, "lakehouses"> & Partial<Lakehouse> & { lakehouses?: Record<string, Lakehouse> } }).fabric;
+	const all = lakehouses ?? (database ? { [database]: { sql_server: sql_server!, database, workspace_id, lakehouse_id } } : {});
+	return { ...rest, lakehouses: all };
+}
+
+/* The named lakehouse, else `default`, else the only one. */
+export function lakehouse(project: ProjectConfig, name?: string): FabricConfig {
+	const names = Object.keys(project.lakehouses);
+	const chosen = name ?? project.default ?? (names.length === 1 ? names[0] : undefined);
+	if (!chosen) throw new Error(`fabric.toml tiene varios lakehouses (${names.join(', ')}): indica cuál o pon default.`);
+	const target = project.lakehouses[chosen];
+	if (!target) throw new Error(`No hay lakehouse '${chosen}' en fabric.toml (hay: ${names.join(', ') || 'ninguno'}).`);
+	const { lakehouses: _, default: __, ...shared } = project;
+	return { ...shared, ...target, name: chosen };
+}
+
+export async function readProject(path: string): Promise<ProjectConfig> {
+	return parseConfig(await Bun.file(path).text());
+}
+
+export async function readConfig(path: string, name?: string): Promise<FabricConfig> {
+	return lakehouse(await readProject(path), name);
 }
 
 /* The team's queries use `?` placeholders, as in Python; Tedious names them. Question marks inside quotes, brackets or comments are left alone. */

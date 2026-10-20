@@ -1,9 +1,14 @@
-# Configuración del lakehouse para este proyecto. No contiene secretos: los valores te los da tu equipo de IT.
+# Lakehouses de este proyecto. No contiene secretos: tu identidad la pone Azure CLI.
+# Claude lo crea con /fabric:lakehouse a partir de los lakehouses que tu cuenta puede ver.
 [fabric]
 tenant = "<tenant-id>"
+default = "<nombre>"               # el que se usa si no se indica otro; opcional con un solo lakehouse
+tables_guide = "docs/tablas.md"
+queries_dir = "consultas"
+
+# Un bloque por lakehouse; el nombre tras "lakehouses." es el que usas en el código y en `-- lakehouse:`.
+[fabric.lakehouses.<nombre>]
 sql_server = "<id>.datawarehouse.fabric.microsoft.com"
 database = "<nombre del lakehouse>"
 workspace_id = "<guid del workspace>"
 lakehouse_id = "<guid del lakehouse>"
-tables_guide = "docs/tablas.md"
-queries_dir = "consultas"

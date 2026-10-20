@@ -12,12 +12,14 @@ from pathlib import Path
 
 from deltalake import DeltaTable
 
-cfg = tomllib.loads(Path("fabric.toml").read_text())["fabric"]
+fabric = tomllib.loads(Path("fabric.toml").read_text())["fabric"]
+lakehouses = fabric.get("lakehouses") or {fabric["database"]: fabric}
+cfg = lakehouses[fabric.get("default") or next(iter(lakehouses))]  # o lakehouses["<nombre>"]
 url = f"abfss://{cfg['workspace_id']}@onelake.dfs.fabric.microsoft.com/{cfg['lakehouse_id']}/Tables/dbo/<tabla>"
 df = DeltaTable(url, storage_options={"use_azure_cli": "true", "use_fabric_endpoint": "true"}).to_pandas()
 ```
 
-Necesita `workspace_id` y `lakehouse_id` en `fabric.toml`. Para tablas grandes, filtra con `DeltaTable(...).to_pandas(filters=[...])` o `columns=[...]` en vez de leerla entera.
+Necesita `workspace_id` y `lakehouse_id` en el bloque del lakehouse en `fabric.toml`; `scripts/discover.ts` los da si faltan. Para tablas grandes, filtra con `DeltaTable(...).to_pandas(filters=[...])` o `columns=[...]` en vez de leerla entera.
 
 ## Errores
 

@@ -31,12 +31,12 @@ It is also listed in the [`datons/agent-plugins`](https://github.com/datons/agen
 
 ## Start a team repository
 
-Copy [`templates/`](templates) into a new repository and fill in `fabric.toml`:
+Ask Claude `/fabric:lakehouse configura este proyecto` in an empty folder: it lists the lakehouses your Microsoft account can see (`scripts/discover.ts`), asks which ones you need, and writes `fabric.toml` with one block per lakehouse. Or copy [`templates/`](templates) into a new repository and fill it in by hand:
 
 ```
 your-team-queries/
 ├── .claude/settings.json   # installs this plugin for anyone who opens the repo
-├── fabric.toml             # tenant, SQL endpoint, lakehouse
+├── fabric.toml             # tenant and one block per lakehouse (SQL endpoint, database)
 ├── docs/tablas.md          # what each table means: grain, units, traps
 ├── docs/marca.md           # brand for reports: colours, typeface, logo
 └── consultas/*.sql         # the team's validated queries

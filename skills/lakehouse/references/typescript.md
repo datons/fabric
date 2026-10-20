@@ -21,10 +21,14 @@ import { AzureCliCredential } from '@azure/identity';
 import { parse } from 'smol-toml';
 import { Connection, Request, TYPES } from 'tedious';
 
-const cfg = (parse(readFileSync('fabric.toml', 'utf8')) as { fabric: { tenant: string; sql_server: string; database: string } }).fabric;
-const credential = new AzureCliCredential({ tenantId: cfg.tenant });
+type Lakehouse = { sql_server: string; database: string };
+const fabric = (parse(readFileSync('fabric.toml', 'utf8')) as { fabric: Lakehouse & { tenant: string; default?: string; lakehouses?: Record<string, Lakehouse> } }).fabric;
+const lakehouses = fabric.lakehouses ?? { [fabric.database]: fabric };
+const credential = new AzureCliCredential({ tenantId: fabric.tenant });
 
-export async function query<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {
+/* Sin `lakehouse` usa el `default` de fabric.toml (o el único que haya). */
+export async function query<T = Record<string, unknown>>(sql: string, params: unknown[] = [], lakehouse?: string): Promise<T[]> {
+	const cfg = lakehouses[lakehouse ?? fabric.default ?? Object.keys(lakehouses)[0]];
 	const { token } = await credential.getToken('https://database.windows.net/.default');
 	const connection = new Connection({
 		server: cfg.sql_server,
@@ -46,8 +50,11 @@ export async function query<T = Record<string, unknown>>(sql: string, params: un
 	}
 }
 
-/* Una consulta validada del equipo, tal cual: el fichero de consultas/ y sus parámetros en el orden de su cabecera. */
-export const validated = <T = Record<string, unknown>>(file: string, params: unknown[] = []) => query<T>(readFileSync(`consultas/${file}`, 'utf8'), params);
+/* Una consulta validada del equipo, tal cual: el fichero de consultas/, sus parámetros en el orden de su cabecera y el lakehouse de su línea `-- lakehouse:`. */
+export function validated<T = Record<string, unknown>>(file: string, params: unknown[] = []) {
+	const sql = readFileSync(`consultas/${file}`, 'utf8');
+	return query<T>(sql, params, sql.match(/^-- lakehouse:\s*(\S+)/m)?.[1]);
+}
 ```
 
 Los `?` de las consultas del equipo se convierten en parámetros con nombre (`@p1`, `@p2`…) y los valores se pasan aparte, nunca dentro del SQL. Si una consulta tuviera un `?` dentro de un texto entre comillas, escríbela con parámetros con nombre.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- Configuración sin pedir valores a IT: `scripts/discover.ts` (y `discover.py`) lista con la sesión de Azure CLI los lakehouses que ve la cuenta, y la skill escribe `fabric.toml` con los que elija el usuario (`references/configurar.md`).
+- Varios lakehouses por proyecto: bloques `[fabric.lakehouses.<nombre>]` con `default`. El formato de un solo lakehouse bajo `[fabric]` sigue funcionando. Las consultas validadas pueden indicar el suyo con `-- lakehouse:`; `check` comprueba todos y `validate` usa el de cada consulta.
+- La skill exige que el código, la configuración y las consultas vivan en el proyecto, con la conexión Python en `lakehouse.py`, nunca en una carpeta temporal.
+- `check.ts` funciona con el plugin instalado por Claude Code: sus dependencias también están en el `package.json` raíz, porque Claude Code las instala ahí y con ese `node_modules` Bun no instalaba las de `scripts/`.
+- `check` distingue un fallo de red (VPN, puerto 1433) de la falta de permisos.
+
 ## 0.3.1
 
 - `templates/docs/marca.md`: la identidad visual del equipo (colores, tipografía, logotipo) para informes y cuadros de mando, junto a la guía de tablas.

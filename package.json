@@ -2,6 +2,7 @@
   "name": "fabric-plugin-dev",
   "private": true,
   "type": "module",
+  "description": "Herramientas de desarrollo del plugin. Las dependencias de los scripts de la skill se repiten aquí porque Claude Code instala las de este fichero al instalar el plugin, y con un node_modules en una carpeta superior Bun no instala las de skills/lakehouse/scripts.",
   "scripts": {
     "check": "tsc --noEmit",
     "test": "bun test tests"
@@ -9,5 +10,9 @@
   "devDependencies": {
     "@types/bun": "1.2.19",
     "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "@azure/identity": "4.14.0",
+    "tedious": "20.3.8"
   }
 }

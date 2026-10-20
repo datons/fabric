@@ -38,3 +38,39 @@ def test_empty_result_and_duplicate_grain_fail():
     dup = [("2026-01-01", "A", 1.0), ("2026-01-01", "A", 2.0)]
     assert validate.result_problems(meta, cols, dup) == ["filas duplicadas para el grano (fecha, programa)"]
     assert validate.result_problems(meta, cols, [("2026-01-01", "A", 1.0), ("2026-01-01", "B", 2.0)]) == []
+
+
+MULTI = """[fabric]
+tenant = "t"
+default = "pro"
+queries_dir = "consultas"
+
+[fabric.lakehouses.dev]
+sql_server = "dev.example"
+database = "lh_dev"
+
+[fabric.lakehouses.pro]
+sql_server = "pro.example"
+database = "lh_pro"
+"""
+
+
+def test_lakehouse_named_else_default_with_shared_keys():
+    project = validate.parse_config(MULTI)
+    assert list(project["lakehouses"]) == ["dev", "pro"]
+    assert {"name": "pro", "database": "lh_pro", "tenant": "t", "queries_dir": "consultas"}.items() <= validate.lakehouse(project).items()
+    assert validate.lakehouse(project, "dev")["sql_server"] == "dev.example"
+
+
+def test_several_lakehouses_need_default_or_name():
+    import pytest
+
+    with pytest.raises(ValueError, match="varios lakehouses"):
+        validate.lakehouse(validate.parse_config(MULTI.replace('default = "pro"\n', "")))
+    with pytest.raises(ValueError, match="No hay lakehouse 'otro'"):
+        validate.lakehouse(validate.parse_config(MULTI), "otro")
+
+
+def test_single_lakehouse_form_is_named_after_its_database():
+    project = validate.parse_config('[fabric]\ntenant = "t"\nsql_server = "s"\ndatabase = "lh_x"\n')
+    assert validate.lakehouse(project) == {"tenant": "t", "sql_server": "s", "database": "lh_x", "name": "lh_x"}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { REQUIRED, header, headerProblems, namedParams, resultProblems } from '../skills/lakehouse/scripts/lib.ts';
+import { REQUIRED, header, headerProblems, lakehouse, namedParams, parseConfig, resultProblems } from '../skills/lakehouse/scripts/lib.ts';
 
 const GOOD = `-- description: energía diaria por unidad
 -- params: unidad, desde
@@ -42,5 +42,38 @@ describe('named parameters for Tedious', () => {
 
 	it('counts only real placeholders when checking the header', () => {
 		expect(headerProblems(GOOD.replace('SELECT fecha', "SELECT '¿?' AS nota, fecha"), header(GOOD))).toEqual([]);
+	});
+});
+
+describe('fabric.toml with one or several lakehouses', () => {
+	const MULTI = `[fabric]
+tenant = "t"
+default = "pro"
+queries_dir = "consultas"
+
+[fabric.lakehouses.dev]
+sql_server = "dev.example"
+database = "lh_dev"
+
+[fabric.lakehouses.pro]
+sql_server = "pro.example"
+database = "lh_pro"
+`;
+
+	it('picks the named lakehouse, else default, and carries the shared keys', () => {
+		const project = parseConfig(MULTI);
+		expect(Object.keys(project.lakehouses)).toEqual(['dev', 'pro']);
+		expect(lakehouse(project)).toMatchObject({ name: 'pro', database: 'lh_pro', tenant: 't', queries_dir: 'consultas' });
+		expect(lakehouse(project, 'dev').sql_server).toBe('dev.example');
+		expect(() => lakehouse(project, 'otro')).toThrow("No hay lakehouse 'otro'");
+	});
+
+	it('needs default or a name when there are several', () => {
+		expect(() => lakehouse(parseConfig(MULTI.replace('default = "pro"\n', '')))).toThrow('varios lakehouses');
+	});
+
+	it('reads the single-lakehouse form as one lakehouse named after its database', () => {
+		const project = parseConfig('[fabric]\ntenant = "t"\nsql_server = "s"\ndatabase = "lh_x"\n');
+		expect(lakehouse(project)).toMatchObject({ name: 'lh_x', sql_server: 's', tenant: 't' });
 	});
 });

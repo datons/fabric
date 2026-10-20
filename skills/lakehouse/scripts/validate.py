@@ -2,13 +2,35 @@
 # requires-python = ">=3.12,<3.13"
 # dependencies = ["mssql-python==1.6.0", "azure-identity"]
 # ///
-"""Ejecuta cada consulta de queries_dir con sus parámetros `example` y comprueba que devuelve filas y que no hay duplicados en el grano declarado. Uso: uv run validate.py [fabric.toml] [consulta.sql ...]"""
+"""Ejecuta cada consulta de queries_dir con sus parámetros `example` en su lakehouse (`-- lakehouse:` o el de por defecto) y comprueba que devuelve filas y que no hay duplicados en el grano declarado. Uso: uv run validate.py [fabric.toml] [consulta.sql ...]"""
 
 import sys
 import tomllib
 from pathlib import Path
 
 REQUIRED = ("description", "params", "example", "grain", "validated", "reviewer")
+LAKEHOUSE_KEYS = ("sql_server", "database", "workspace_id", "lakehouse_id")
+
+
+def parse_config(text: str) -> dict:
+    """`[fabric.lakehouses.<name>]` tables, or the single-lakehouse form with sql_server and database directly under `[fabric]`, which becomes one lakehouse named after its database."""
+    fabric = tomllib.loads(text)["fabric"]
+    single = {k: fabric.pop(k) for k in LAKEHOUSE_KEYS if k in fabric}
+    if "lakehouses" not in fabric:
+        fabric["lakehouses"] = {single["database"]: single} if "database" in single else {}
+    return fabric
+
+
+def lakehouse(project: dict, name: str | None = None) -> dict:
+    """The named lakehouse, else `default`, else the only one, merged with the project's shared keys."""
+    names = list(project["lakehouses"])
+    chosen = name or project.get("default") or (names[0] if len(names) == 1 else None)
+    if not chosen:
+        raise ValueError(f"fabric.toml tiene varios lakehouses ({', '.join(names)}): indica cuál o pon default.")
+    if chosen not in project["lakehouses"]:
+        raise ValueError(f"No hay lakehouse '{chosen}' en fabric.toml (hay: {', '.join(names) or 'ninguno'}).")
+    shared = {k: v for k, v in project.items() if k not in ("lakehouses", "default")}
+    return {**shared, **project["lakehouses"][chosen], "name": chosen}
 
 
 def header(sql: str) -> dict[str, str]:
@@ -48,13 +70,21 @@ def main(argv: list[str]) -> int:
     import mssql_python
 
     cfg_path = Path(argv[0] if argv else "fabric.toml")
-    cfg = tomllib.loads(cfg_path.read_text())["fabric"]
-    queries_dir = cfg_path.parent / cfg.get("queries_dir", "consultas")
+    project = parse_config(cfg_path.read_text())
+    queries_dir = cfg_path.parent / project.get("queries_dir", "consultas")
     files = [Path(f) for f in argv[1:]] or sorted(queries_dir.glob("*.sql"))
-    conn_str = f"Server={cfg['sql_server']};Database={cfg['database']};Authentication=ActiveDirectoryDefault;Encrypt=yes"
+
+    # One connection per lakehouse, opened the first time a query needs it.
+    connections: dict = {}
+
+    def conn_for(name: str | None):
+        cfg = lakehouse(project, name)
+        if cfg["name"] not in connections:
+            connections[cfg["name"]] = mssql_python.connect(f"Server={cfg['sql_server']};Database={cfg['database']};Authentication=ActiveDirectoryDefault;Encrypt=yes")
+        return connections[cfg["name"]]
 
     failed = 0
-    with mssql_python.connect(conn_str) as conn:
+    try:
         for f in files:
             sql = f.read_text()
             meta = header(sql)
@@ -63,7 +93,7 @@ def main(argv: list[str]) -> int:
             if not problems:
                 params = example_params(meta)
                 try:
-                    with conn.cursor() as cur:
+                    with conn_for(meta.get("lakehouse")).cursor() as cur:
                         cur.execute(sql, params) if params else cur.execute(sql)
                         cols = [c[0] for c in cur.description]
                         rows = [tuple(r) for r in cur.fetchall()]
@@ -73,6 +103,9 @@ def main(argv: list[str]) -> int:
             failed += bool(problems)
             status = f"[OK] {f.name} ({len(rows)} filas)" if not problems else f"[FALLO] {f.name}"
             print(status + "".join(f"\n       {p}" for p in problems))
+    finally:
+        for c in connections.values():
+            c.close()
 
     print(f"\n{len(files) - failed}/{len(files)} consultas válidas.")
     return 1 if failed else 0

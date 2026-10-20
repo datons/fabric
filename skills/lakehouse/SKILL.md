@@ -1,6 +1,6 @@
 ---
 name: lakehouse
-description: "Consulta un lakehouse de Microsoft Fabric en el ordenador del usuario y con su propia identidad de Microsoft: cuadros de mando en SvelteKit/TypeScript con tedious y análisis puntuales en Python con mssql-python, más tablas Delta de OneLake con deltalake. Prioriza las consultas validadas del equipo y comprueba el acceso. Use when the project has a fabric.toml, or the user says 'consulta el lakehouse', 'qué tablas hay en Fabric', 'lee la tabla X del datalake', 'comprueba mi acceso a Fabric', 'conéctate a OneLake', 'guarda esta consulta como validada', 'haz un cuadro de mando con los datos del lakehouse'."
+description: "Consulta uno o varios lakehouses de Microsoft Fabric en el ordenador del usuario y con su propia identidad de Microsoft: cuadros de mando en SvelteKit/TypeScript con tedious y análisis puntuales en Python con mssql-python, más tablas Delta de OneLake con deltalake. Configura el proyecto descubriendo los lakehouses que ve su cuenta, prioriza las consultas validadas del equipo y comprueba el acceso. Use when the project has a fabric.toml, or the user says 'configura Fabric en este proyecto', 'conecta este proyecto al datalake', 'consulta el lakehouse', 'qué tablas hay en Fabric', 'lee la tabla X del datalake', 'comprueba mi acceso a Fabric', 'conéctate a OneLake', 'guarda esta consulta como validada', 'haz un cuadro de mando con los datos del lakehouse'."
 argument-hint: "[pregunta sobre los datos]"
 ---
 
@@ -19,29 +19,37 @@ Las rutas `scripts/...` y `references/...` son relativas a la carpeta de esta sk
 
 | Cuándo | Referencia |
 |---|---|
+| Si falta `fabric.toml` o hay que añadir un lakehouse | `references/configurar.md` |
 | Antes de escribir SQL a medida | `references/sql.md` |
 | Cuadros de mando y aplicaciones en SvelteKit | `references/typescript.md` |
 | Al usar, guardar o validar consultas del equipo | `references/consultas.md` |
 | Si el endpoint SQL falla con NaN, o hay que leer ficheros Delta | `references/onelake.md` |
 
-## 1. Lee la configuración del proyecto
+## 1. Lee o crea la configuración del proyecto
 
-Busca `fabric.toml` en la raíz del proyecto. Si no existe, pide los valores al usuario (los tiene su equipo de IT) y créalo:
+Busca `fabric.toml` en la raíz del proyecto. Si no existe, créalo tú con la sesión del usuario, sin pedirle valores a mano: sigue `references/configurar.md`.
 
 ```toml
 [fabric]
 tenant = "<tenant-id>"
-sql_server = "<id>.datawarehouse.fabric.microsoft.com"   # lakehouse > SQL analytics endpoint > cadena de conexión
+default = "medidas"                     # el que se usa si el código no indica otro
+tables_guide = "docs/tablas.md"         # opcional: qué significa cada tabla
+queries_dir = "consultas"               # opcional: consultas validadas del equipo
+
+[fabric.lakehouses.medidas]             # uno o varios; el nombre es el que se usa en el código
+sql_server = "<id>.datawarehouse.fabric.microsoft.com"
 database = "<nombre del lakehouse>"
 workspace_id = "<guid del workspace>"   # solo para leer Delta desde OneLake
 lakehouse_id = "<guid del lakehouse>"   # solo para leer Delta desde OneLake
-tables_guide = "docs/tablas.md"         # opcional: qué significa cada tabla
-queries_dir = "consultas"               # opcional: consultas validadas del equipo
 ```
+
+Un proyecto con un solo lakehouse puede tener `sql_server` y `database` directamente bajo `[fabric]`, como en versiones anteriores. Si el usuario necesita otro lakehouse, añade otro bloque `[fabric.lakehouses.<nombre>]` con `references/configurar.md`.
 
 Si hay `tables_guide`, léelo antes de escribir ninguna consulta: ahí están el significado, el grano y las unidades de las tablas.
 
 `fabric.toml` no contiene secretos, pero describe la infraestructura del cliente: no copies sus valores en código, ejemplos ni repositorios compartidos. Léelos del fichero al ejecutar.
+
+El código, la configuración y las consultas viven en la carpeta del proyecto, nunca en una carpeta temporal: el usuario debe poder volver a ejecutarlos sin ti.
 
 ## 2. Comprueba el acceso
 
@@ -53,40 +61,39 @@ bun scripts/check.ts fabric.toml
 
 Bun instala solo sus dependencias la primera vez. Si el usuario trabaja únicamente en Python y no tiene Bun, la misma comprobación es `uv run scripts/check.py fabric.toml`.
 
-Informa OK/FALLO de: configuración, Azure CLI, conexión SQL (y con qué usuario) y tablas visibles. Si algo falla, muestra al usuario el arreglo exacto que imprime el script; no improvises atajos ni otras credenciales.
+Comprueba todos los lakehouses del fichero; añade su nombre para comprobar solo uno (`bun scripts/check.ts fabric.toml medidas`). Informa OK/FALLO de: configuración, Azure CLI, conexión SQL de cada lakehouse (y con qué usuario) y tablas visibles. Si algo falla, muestra al usuario el arreglo exacto que imprime el script; no improvises atajos ni otras credenciales.
 
 El inicio de sesión es `az login --tenant <tenant>` (con `--allow-no-subscriptions` si la cuenta no tiene suscripción de Azure). Fabric aplica a cada consulta los permisos del propio usuario.
 
 ## 3. Conecta y consulta desde Python
 
-Para TypeScript y SvelteKit, sigue `references/typescript.md`. En Python, los scripts declaran sus dependencias en la cabecera para que `uv run script.py` funcione sin instalar nada. Fija `mssql-python==1.6.0`: la 1.7.0 falla en macOS con Python 3.12.
+Para TypeScript y SvelteKit, sigue `references/typescript.md`. En Python, pon la conexión una sola vez en `lakehouse.py`, en la raíz del proyecto, junto a los scripts de análisis que la importan (`from lakehouse import query`). Declara las dependencias en el proyecto con `uv init --bare --python 3.12` y `uv add "mssql-python==1.6.0" azure-identity pandas`, y ejecuta desde la raíz con `uv run <script>.py`. Fija `mssql-python==1.6.0`: la 1.7.0 falla en macOS con Python 3.12.
 
 ```python
-# /// script
-# requires-python = ">=3.12,<3.13"
-# dependencies = ["mssql-python==1.6.0", "azure-identity", "pandas"]
-# ///
+# lakehouse.py
 import tomllib
 from pathlib import Path
 
 import mssql_python
 import pandas as pd
 
-cfg = tomllib.loads(Path("fabric.toml").read_text())["fabric"]
+fabric = tomllib.loads(Path("fabric.toml").read_text())["fabric"]
+lakehouses = fabric.get("lakehouses") or {fabric["database"]: fabric}
 
 
-def query(sql: str, params: tuple = ()) -> pd.DataFrame:
+def query(sql: str, params: tuple = (), lakehouse: str | None = None) -> pd.DataFrame:
+    cfg = lakehouses[lakehouse or fabric.get("default") or next(iter(lakehouses))]
     conn_str = f"Server={cfg['sql_server']};Database={cfg['database']};Authentication=ActiveDirectoryDefault;Encrypt=yes"
     with mssql_python.connect(conn_str) as conn, conn.cursor() as cur:
         cur.execute(sql, params) if params else cur.execute(sql)
         return pd.DataFrame.from_records([tuple(r) for r in cur.fetchall()], columns=[c[0] for c in cur.description])
 ```
 
-`ActiveDirectoryDefault` usa la sesión de Azure CLI: no hace falta gestionar tokens ni instalar el driver ODBC.
+`ActiveDirectoryDefault` usa la sesión de Azure CLI: no hace falta gestionar tokens ni instalar el driver ODBC. Con varios lakehouses, indica cuál en cada llamada (`query(sql, params, lakehouse="pro")`); sin indicarlo se usa `default`.
 
 ## 4. Primero, las consultas validadas
 
-Si hay `queries_dir`, busca ahí antes de escribir SQL. Si una consulta encaja, ejecútala tal cual con `query(Path(fichero).read_text(), params)` y di qué fichero has usado. Si ninguna encaja, escribe una a medida siguiendo `references/sql.md` y marca el resultado como **no validado**. El formato de las consultas, cómo proponer una nueva y cómo validarlas están en `references/consultas.md`.
+Si hay `queries_dir`, busca ahí antes de escribir SQL. Si una consulta encaja, ejecútala tal cual con `query(Path(fichero).read_text(), params, lakehouse)` (el de su línea `-- lakehouse:`, si la tiene) y di qué fichero has usado. Si ninguna encaja, escribe una a medida siguiendo `references/sql.md` y marca el resultado como **no validado**. El formato de las consultas, cómo proponer una nueva y cómo validarlas están en `references/consultas.md`.
 
 ## 5. Errores frecuentes
 
