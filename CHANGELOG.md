@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+- Python como paquete de uv: la conexión vive en `src/<proyecto>/lakehouse.py` (`query()`, `consulta()` y el comando `uv run consultar <consulta.sql> …`), los scripts puntuales en `random/` y lo que se reutiliza pasa a un módulo de `src/`. Nada suelto en la raíz. La conexión encuentra `fabric.toml` desde cualquier subcarpeta.
+
 ## 0.4.0
 
 - Configuración sin pedir valores a IT: `scripts/discover.ts` (y `discover.py`) lista con la sesión de Azure CLI los lakehouses que ve la cuenta, y la skill escribe `fabric.toml` con los que elija el usuario (`references/configurar.md`).

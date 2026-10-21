@@ -4,7 +4,7 @@ Una consulta validada es la respuesta acordada por el equipo a una pregunta. Viv
 
 ## Usarlas
 
-- Ejecútala tal cual con `query(Path(fichero).read_text(), params, lakehouse)`, con los parámetros en el orden de `params` y el lakehouse de su línea `lakehouse` si la tiene.
+- Ejecútala tal cual con `consulta(fichero, params)` (o `uv run consultar fichero.sql …`), con los parámetros en el orden de `params`; usa el lakehouse de su línea `lakehouse` si la tiene.
 - Di qué fichero has usado y si está validada (`validated` con fecha) o pendiente.
 - No cambies su SQL sobre la marcha. Si necesita un cambio, propón el cambio en el fichero.
 
