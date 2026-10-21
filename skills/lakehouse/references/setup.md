@@ -21,23 +21,23 @@ Sin Bun: `uv run scripts/discover.py --json`. Devuelve el tenant y, por cada lak
 
 ## 3. Escribe fabric.toml
 
-Un bloque por lakehouse elegido. Nómbralo corto y con sentido para el usuario (`medidas`, `pro`), no con el nombre técnico; el nombre es el que usará en el código y en las consultas. Si hay varios, pon `default` en el que más usará.
+Un bloque por lakehouse elegido. Nómbralo corto y con sentido para el usuario (`metering`, `pro`), en inglés y no con el nombre técnico; el nombre es el que usará en el código y en las consultas. Si hay varios, pon `default` en el que más usará.
 
 ```toml
 [fabric]
 tenant = "<tenant del paso 2>"
-default = "medidas"
-tables_guide = "docs/tablas.md"
-queries_dir = "consultas"
+default = "metering"
+tables_guide = "docs/tables.md"
+queries_dir = "queries"
 
-[fabric.lakehouses.medidas]
+[fabric.lakehouses.metering]
 sql_server = "<sql_server>"
 database = "<lakehouse>"
 workspace_id = "<workspace_id>"
 lakehouse_id = "<lakehouse_id>"
 ```
 
-Para añadir un lakehouse a un proyecto que ya tiene `fabric.toml`, repite el paso 2 y añade solo el bloque nuevo. Si el fichero tiene `sql_server` y `database` directamente bajo `[fabric]`, pásalos antes a su propio bloque `[fabric.lakehouses.<nombre>]` y pon `default` en él, para que el código existente siga usando el mismo.
+Para añadir un lakehouse a un proyecto que ya tiene `fabric.toml`, repite el paso 2 y añade solo el bloque nuevo. Si el fichero tiene `sql_server` y `database` directamente bajo `[fabric]`, pásalos antes a su propio bloque `[fabric.lakehouses.<name>]` y pon `default` en él, para que el código existente siga usando el mismo.
 
 ## 4. Comprueba y documenta
 

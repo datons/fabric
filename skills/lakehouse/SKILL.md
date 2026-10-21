@@ -19,31 +19,31 @@ Las rutas `scripts/...` y `references/...` son relativas a la carpeta de esta sk
 
 | Cuándo | Referencia |
 |---|---|
-| Si falta `fabric.toml` o hay que añadir un lakehouse | `references/configurar.md` |
+| Si falta `fabric.toml` o hay que añadir un lakehouse | `references/setup.md` |
 | Antes de escribir SQL a medida | `references/sql.md` |
 | Cuadros de mando y aplicaciones en SvelteKit | `references/typescript.md` |
-| Al usar, guardar o validar consultas del equipo | `references/consultas.md` |
+| Al usar, guardar o validar consultas del equipo | `references/queries.md` |
 | Si el endpoint SQL falla con NaN, o hay que leer ficheros Delta | `references/onelake.md` |
 
 ## 1. Lee o crea la configuración del proyecto
 
-Busca `fabric.toml` en la raíz del proyecto. Si no existe, créalo tú con la sesión del usuario, sin pedirle valores a mano: sigue `references/configurar.md`.
+Busca `fabric.toml` en la raíz del proyecto. Si no existe, créalo tú con la sesión del usuario, sin pedirle valores a mano: sigue `references/setup.md`.
 
 ```toml
 [fabric]
 tenant = "<tenant-id>"
-default = "medidas"                     # el que se usa si el código no indica otro
-tables_guide = "docs/tablas.md"         # opcional: qué significa cada tabla
-queries_dir = "consultas"               # opcional: consultas validadas del equipo
+default = "metering"                     # el que se usa si el código no indica otro
+tables_guide = "docs/tables.md"         # opcional: qué significa cada tabla
+queries_dir = "queries"               # opcional: consultas validadas del equipo
 
-[fabric.lakehouses.medidas]             # uno o varios; el nombre es el que se usa en el código
+[fabric.lakehouses.metering]             # uno o varios; el nombre es el que se usa en el código
 sql_server = "<id>.datawarehouse.fabric.microsoft.com"
 database = "<nombre del lakehouse>"
 workspace_id = "<guid del workspace>"   # solo para leer Delta desde OneLake
 lakehouse_id = "<guid del lakehouse>"   # solo para leer Delta desde OneLake
 ```
 
-Un proyecto con un solo lakehouse puede tener `sql_server` y `database` directamente bajo `[fabric]`, como en versiones anteriores. Si el usuario necesita otro lakehouse, añade otro bloque `[fabric.lakehouses.<nombre>]` con `references/configurar.md`.
+Un proyecto con un solo lakehouse puede tener `sql_server` y `database` directamente bajo `[fabric]`, como en versiones anteriores. Si el usuario necesita otro lakehouse, añade otro bloque `[fabric.lakehouses.<name>]` con `references/setup.md`.
 
 Si hay `tables_guide`, léelo antes de escribir ninguna consulta: ahí están el significado, el grano y las unidades de las tablas.
 
@@ -61,7 +61,7 @@ bun scripts/check.ts fabric.toml
 
 Bun instala solo sus dependencias la primera vez. Si el usuario trabaja únicamente en Python y no tiene Bun, la misma comprobación es `uv run scripts/check.py fabric.toml`.
 
-Comprueba todos los lakehouses del fichero; añade su nombre para comprobar solo uno (`bun scripts/check.ts fabric.toml medidas`). Informa OK/FALLO de: configuración, Azure CLI, conexión SQL de cada lakehouse (y con qué usuario) y tablas visibles. Si algo falla, muestra al usuario el arreglo exacto que imprime el script; no improvises atajos ni otras credenciales.
+Comprueba todos los lakehouses del fichero; añade su nombre para comprobar solo uno (`bun scripts/check.ts fabric.toml metering`). Informa OK/FALLO de: configuración, Azure CLI, conexión SQL de cada lakehouse (y con qué usuario) y tablas visibles. Si algo falla, muestra al usuario el arreglo exacto que imprime el script; no improvises atajos ni otras credenciales.
 
 El inicio de sesión es `az login --tenant <tenant>` (con `--allow-no-subscriptions` si la cuenta no tiene suscripción de Azure). Fabric aplica a cada consulta los permisos del propio usuario.
 
@@ -70,19 +70,20 @@ El inicio de sesión es `az login --tenant <tenant>` (con `--allow-no-subscripti
 Para TypeScript y SvelteKit, sigue `references/typescript.md`. En Python, el proyecto es un paquete de uv:
 
 ```
-src/<proyecto>/lakehouse.py   la conexión, una sola vez: query() y consulta()
+src/<project>/lakehouse.py    la conexión, una sola vez: query() y query_file()
 random/                       scripts puntuales: importan el paquete, no repiten la conexión
-consultas/                    SQL validado o pendiente
+output/                       gráficos y ficheros generados (fuera de git)
+queries/                      SQL validado o pendiente
 ```
 
-- Créalo con `uv init --lib --name <proyecto> --python 3.12 --vcs none` y `uv add "mssql-python==1.6.0" azure-identity pandas`. `<proyecto>` es el nombre de la carpeta en snake_case. Fija `mssql-python==1.6.0`: la 1.7.0 falla en macOS con Python 3.12.
-- Registra el comando `consultar` en `pyproject.toml` (`[project.scripts]` → `consultar = "<proyecto>.lakehouse:main"`), para ejecutar una consulta sin escribir código: `uv run consultar energia-diaria.sql EX02AL 2026-08-01 2026-08-08`.
-- Un análisis puntual va en `random/` y se ejecuta con `uv run random/<script>.py`. Cuando se vaya a reutilizar, pásalo a un módulo de `src/<proyecto>/` con su comando en `[project.scripts]`; nada en `src/` importa de `random/`.
+- Créalo con `uv init --lib --name <project> --python 3.12 --vcs none` y `uv add "mssql-python==1.6.0" azure-identity pandas`. `<project>` es el nombre de la carpeta en snake_case. Nombres de ficheros, carpetas, funciones y comandos en inglés; los mensajes y la documentación, en el idioma del usuario. Fija `mssql-python==1.6.0`: la 1.7.0 falla en macOS con Python 3.12.
+- Registra el comando `query` en `pyproject.toml` (`[project.scripts]` → `query = "<project>.lakehouse:main"`), para ejecutar una consulta sin escribir código: `uv run query daily-energy.sql EX02AL 2026-08-01 2026-08-08`.
+- Un análisis puntual va en `random/` y se ejecuta con `uv run random/<script>.py`. Cuando se vaya a reutilizar, pásalo a un módulo de `src/<project>/` con su comando en `[project.scripts]`; nada en `src/` importa de `random/`.
 - Nunca dejes scripts sueltos en la raíz ni en una carpeta temporal.
 
 ```python
-# src/<proyecto>/lakehouse.py
-"""Conexión a los lakehouses de fabric.toml con la sesión de Azure CLI."""
+# src/<project>/lakehouse.py
+"""Connection to the lakehouses in fabric.toml with the Azure CLI session."""
 
 import sys
 import tomllib
@@ -93,7 +94,7 @@ import pandas as pd
 
 
 def _root() -> Path:
-    """La carpeta con fabric.toml, buscando hacia arriba: funciona desde cualquier subcarpeta."""
+    """The folder holding fabric.toml, searched upwards, so it works from any subfolder."""
     for d in [Path.cwd(), *Path.cwd().parents]:
         if (d / "fabric.toml").exists():
             return d
@@ -113,25 +114,25 @@ def query(sql: str, params: tuple = (), lakehouse: str | None = None) -> pd.Data
         return pd.DataFrame.from_records([tuple(r) for r in cur.fetchall()], columns=[c[0] for c in cur.description])
 
 
-def consulta(nombre: str, params: tuple = ()) -> pd.DataFrame:
-    """Una consulta de queries_dir tal cual, en el lakehouse de su línea `-- lakehouse:`."""
-    sql = (ROOT / fabric.get("queries_dir", "consultas") / nombre).read_text()
+def query_file(name: str, params: tuple = ()) -> pd.DataFrame:
+    """A query from queries_dir as is, on the lakehouse named in its `-- lakehouse:` line."""
+    sql = (ROOT / fabric.get("queries_dir", "queries") / name).read_text()
     target = next((line.split(":", 1)[1].strip() for line in sql.splitlines() if line.startswith("-- lakehouse:")), None)
     return query(sql, params, target)
 
 
 def main() -> None:
-    """uv run consultar <consulta.sql> [parámetros...]"""
+    """uv run query <file.sql> [params...]"""
     if len(sys.argv) < 2:
-        sys.exit("Uso: uv run consultar <consulta.sql> [parámetros...]")
-    print(consulta(Path(sys.argv[1]).name, tuple(sys.argv[2:])).to_string(index=False))
+        sys.exit("Uso: uv run query <consulta.sql> [parámetros...]")
+    print(query_file(Path(sys.argv[1]).name, tuple(sys.argv[2:])).to_string(index=False))
 ```
 
 `ActiveDirectoryDefault` usa la sesión de Azure CLI: no hace falta gestionar tokens ni instalar el driver ODBC. Con varios lakehouses, indica cuál en cada llamada (`query(sql, params, lakehouse="pro")`); sin indicarlo se usa `default`.
 
 ## 4. Primero, las consultas validadas
 
-Si hay `queries_dir`, busca ahí antes de escribir SQL. Si una consulta encaja, ejecútala tal cual con `consulta(fichero, params)`, que usa el lakehouse de su línea `-- lakehouse:`, y di qué fichero has usado. Si ninguna encaja, escribe una a medida siguiendo `references/sql.md` y marca el resultado como **no validado**. El formato de las consultas, cómo proponer una nueva y cómo validarlas están en `references/consultas.md`.
+Si hay `queries_dir`, busca ahí antes de escribir SQL. Si una consulta encaja, ejecútala tal cual con `query_file(fichero, params)`, que usa el lakehouse de su línea `-- lakehouse:`, y di qué fichero has usado. Si ninguna encaja, escribe una a medida siguiendo `references/sql.md` y marca el resultado como **no validado**. El formato de las consultas, cómo proponer una nueva y cómo validarlas están en `references/queries.md`.
 
 ## 5. Errores frecuentes
 

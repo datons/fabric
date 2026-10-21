@@ -2,12 +2,12 @@
 # Claude lo crea con /fabric:lakehouse a partir de los lakehouses que tu cuenta puede ver.
 [fabric]
 tenant = "<tenant-id>"
-default = "<nombre>"               # el que se usa si no se indica otro; opcional con un solo lakehouse
-tables_guide = "docs/tablas.md"
-queries_dir = "consultas"
+default = "<name>"               # el que se usa si no se indica otro; opcional con un solo lakehouse
+tables_guide = "docs/tables.md"
+queries_dir = "queries"
 
 # Un bloque por lakehouse; el nombre tras "lakehouses." es el que usas en el código y en `-- lakehouse:`.
-[fabric.lakehouses.<nombre>]
+[fabric.lakehouses.<name>]
 sql_server = "<id>.datawarehouse.fabric.microsoft.com"
 database = "<nombre del lakehouse>"
 workspace_id = "<guid del workspace>"

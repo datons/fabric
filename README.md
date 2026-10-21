@@ -37,9 +37,9 @@ Ask Claude `/fabric:lakehouse configura este proyecto` in an empty folder: it li
 your-team-queries/
 ├── .claude/settings.json   # installs this plugin for anyone who opens the repo
 ├── fabric.toml             # tenant and one block per lakehouse (SQL endpoint, database)
-├── docs/tablas.md          # what each table means: grain, units, traps
-├── docs/marca.md           # brand for reports: colours, typeface, logo
-└── consultas/*.sql         # the team's validated queries
+├── docs/tables.md          # what each table means: grain, units, traps
+├── docs/brand.md           # brand for reports: colours, typeface, logo
+└── queries/*.sql         # the team's validated queries
 ```
 
 Then ask Claude to check your access (`/fabric:lakehouse comprueba mi acceso`), or just ask a question about the data.

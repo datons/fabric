@@ -15,7 +15,7 @@ const exists = await Bun.file(path).exists();
 if (!step(`Configuración (${path})`, exists, exists ? '' : 'Pide a Claude que lo cree con /fabric:lakehouse: descubre tus lakehouses con tu sesión de Azure.')) process.exit(1);
 const project = await readProject(path);
 const names = only ? [only] : Object.keys(project.lakehouses);
-if (!step('Lakehouses configurados', names.length > 0, names.length ? names.join(', ') : 'Añade al menos uno en [fabric.lakehouses.<nombre>].')) process.exit(1);
+if (!step('Lakehouses configurados', names.length > 0, names.length ? names.join(', ') : 'Añade al menos uno en [fabric.lakehouses.<name>].')) process.exit(1);
 
 const hasAz = Bun.which('az') !== null;
 if (!step('Azure CLI instalado', hasAz, hasAz ? '' : 'Instala Azure CLI y abre un terminal nuevo.')) process.exit(1);

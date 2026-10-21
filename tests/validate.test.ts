@@ -5,7 +5,7 @@ const GOOD = `-- description: energía diaria por unidad
 -- params: unidad, desde
 -- example: U1, 2026-01-01
 -- grain: una fila por fecha y programa
--- validated: pendiente
+-- validated: pending
 -- reviewer: equipo de datos
 SELECT fecha, programa, SUM(energia) FROM [dbo].[t] WHERE unidad = ? AND fecha >= ? GROUP BY fecha, programa
 `;
@@ -49,7 +49,7 @@ describe('fabric.toml with one or several lakehouses', () => {
 	const MULTI = `[fabric]
 tenant = "t"
 default = "pro"
-queries_dir = "consultas"
+queries_dir = "queries"
 
 [fabric.lakehouses.dev]
 sql_server = "dev.example"
@@ -63,7 +63,7 @@ database = "lh_pro"
 	it('picks the named lakehouse, else default, and carries the shared keys', () => {
 		const project = parseConfig(MULTI);
 		expect(Object.keys(project.lakehouses)).toEqual(['dev', 'pro']);
-		expect(lakehouse(project)).toMatchObject({ name: 'pro', database: 'lh_pro', tenant: 't', queries_dir: 'consultas' });
+		expect(lakehouse(project)).toMatchObject({ name: 'pro', database: 'lh_pro', tenant: 't', queries_dir: 'queries' });
 		expect(lakehouse(project, 'dev').sql_server).toBe('dev.example');
 		expect(() => lakehouse(project, 'otro')).toThrow("No hay lakehouse 'otro'");
 	});

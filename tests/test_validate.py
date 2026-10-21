@@ -9,7 +9,7 @@ GOOD = """-- description: energía diaria por unidad
 -- params: unidad, desde
 -- example: U1, 2026-01-01
 -- grain: una fila por fecha y programa
--- validated: pendiente
+-- validated: pending
 -- reviewer: equipo de datos
 SELECT fecha, programa, SUM(energia) FROM [dbo].[t] WHERE unidad = ? AND fecha >= ? GROUP BY fecha, programa
 """
@@ -43,7 +43,7 @@ def test_empty_result_and_duplicate_grain_fail():
 MULTI = """[fabric]
 tenant = "t"
 default = "pro"
-queries_dir = "consultas"
+queries_dir = "queries"
 
 [fabric.lakehouses.dev]
 sql_server = "dev.example"
@@ -58,7 +58,7 @@ database = "lh_pro"
 def test_lakehouse_named_else_default_with_shared_keys():
     project = validate.parse_config(MULTI)
     assert list(project["lakehouses"]) == ["dev", "pro"]
-    assert {"name": "pro", "database": "lh_pro", "tenant": "t", "queries_dir": "consultas"}.items() <= validate.lakehouse(project).items()
+    assert {"name": "pro", "database": "lh_pro", "tenant": "t", "queries_dir": "queries"}.items() <= validate.lakehouse(project).items()
     assert validate.lakehouse(project, "dev")["sql_server"] == "dev.example"
 
 

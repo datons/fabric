@@ -28,7 +28,7 @@ if not step(f"Configuración ({path})", path.exists(), "" if path.exists() else 
     sys.exit(1)
 project = parse_config(path.read_text())
 names = sys.argv[2:3] or list(project["lakehouses"])
-if not step("Lakehouses configurados", bool(names), ", ".join(names) or "Añade al menos uno en [fabric.lakehouses.<nombre>]."):
+if not step("Lakehouses configurados", bool(names), ", ".join(names) or "Añade al menos uno en [fabric.lakehouses.<name>]."):
     sys.exit(1)
 
 has_az = shutil.which("az") is not None

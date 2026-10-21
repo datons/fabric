@@ -71,7 +71,7 @@ def main(argv: list[str]) -> int:
 
     cfg_path = Path(argv[0] if argv else "fabric.toml")
     project = parse_config(cfg_path.read_text())
-    queries_dir = cfg_path.parent / project.get("queries_dir", "consultas")
+    queries_dir = cfg_path.parent / project.get("queries_dir", "queries")
     files = [Path(f) for f in argv[1:]] or sorted(queries_dir.glob("*.sql"))
 
     # One connection per lakehouse, opened the first time a query needs it.

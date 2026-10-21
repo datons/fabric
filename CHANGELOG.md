@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0
+
+- Nombres de código en inglés; mensajes y documentación, en el idioma del usuario. `query_file()` sustituye a `consulta()` y el comando `query` a `consultar`. Plantilla y valores por defecto: `queries/`, `docs/tables.md`, `docs/brand.md`, `output/` y `validated: pending`. Las referencias de la skill pasan a `references/queries.md` y `references/setup.md`.
+- Compatibilidad: sin `queries_dir`, la carpeta por defecto es ahora `queries/`. Los proyectos que declaran `queries_dir = "consultas"` no cambian.
+
 ## 0.4.1
 
 - Python como paquete de uv: la conexión vive en `src/<proyecto>/lakehouse.py` (`query()`, `consulta()` y el comando `uv run consultar <consulta.sql> …`), los scripts puntuales en `random/` y lo que se reutiliza pasa a un módulo de `src/`. Nada suelto en la raíz. La conexión encuentra `fabric.toml` desde cualquier subcarpeta.

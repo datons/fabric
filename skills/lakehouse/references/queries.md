@@ -4,13 +4,13 @@ Una consulta validada es la respuesta acordada por el equipo a una pregunta. Viv
 
 ## Usarlas
 
-- Ejecútala tal cual con `consulta(fichero, params)` (o `uv run consultar fichero.sql …`), con los parámetros en el orden de `params`; usa el lakehouse de su línea `lakehouse` si la tiene.
-- Di qué fichero has usado y si está validada (`validated` con fecha) o pendiente.
+- Ejecútala tal cual con `query_file(fichero, params)` (o `uv run query fichero.sql …`), con los parámetros en el orden de `params`; usa el lakehouse de su línea `lakehouse` si la tiene.
+- Di qué fichero has usado y si está validada (`validated` con fecha) o pendiente (`pending`).
 - No cambies su SQL sobre la marcha. Si necesita un cambio, propón el cambio en el fichero.
 
 ## Proponer una nueva
 
-Si el usuario va a reutilizar una consulta a medida, ofrece guardarla en `queries_dir` como borrador con `validated: pendiente`. La valida el revisor del equipo; tú nunca pones la fecha en `validated`.
+Si el usuario va a reutilizar una consulta a medida, ofrece guardarla en `queries_dir` como borrador con `validated: pending`. La valida el revisor del equipo; tú nunca pones la fecha en `validated`.
 
 ## Formato
 
@@ -21,7 +21,7 @@ Fichero `.sql` con una cabecera de comentarios. Todas las claves son obligatoria
 -- params: nombre (significado/formato), en el orden de los ?
 -- example: valor1, valor2
 -- grain: una fila por <col> y <col>
--- validated: AAAA-MM-DD o pendiente
+-- validated: YYYY-MM-DD or pending
 -- reviewer: equipo o rol que la valida
 -- lakehouse: nombre del bloque en fabric.toml (sin esta línea, el default)
 -- notes: trampas que resuelve

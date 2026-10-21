@@ -50,9 +50,9 @@ export async function query<T = Record<string, unknown>>(sql: string, params: un
 	}
 }
 
-/* Una consulta validada del equipo, tal cual: el fichero de consultas/, sus parámetros en el orden de su cabecera y el lakehouse de su línea `-- lakehouse:`. */
+/* Una consulta validada del equipo, tal cual: el fichero de queries/, sus parámetros en el orden de su cabecera y el lakehouse de su línea `-- lakehouse:`. */
 export function validated<T = Record<string, unknown>>(file: string, params: unknown[] = []) {
-	const sql = readFileSync(`consultas/${file}`, 'utf8');
+	const sql = readFileSync(`queries/${file}`, 'utf8');
 	return query<T>(sql, params, sql.match(/^-- lakehouse:\s*(\S+)/m)?.[1]);
 }
 ```
@@ -74,7 +74,7 @@ La página recibe `data.days` y lo dibuja; las fechas llegan como `Date`. Valida
 
 ## Reglas
 
-- Las mismas que en Python: primero una consulta validada (`references/consultas.md`) y SQL a medida solo si ninguna encaja (`references/sql.md`), marcado como no validado.
+- Las mismas que en Python: primero una consulta validada (`references/queries.md`) y SQL a medida solo si ninguna encaja (`references/sql.md`), marcado como no validado.
 - `fabric.toml` se lee del disco al arrancar; no copies sus valores en el código.
 - Agrega en SQL y envía a la página solo lo que se va a dibujar.
 - La aplicación funciona en el equipo de quien tiene sesión de Azure CLI. Para publicarla para otras personas hace falta otra identidad (una identidad administrada o un principal de servicio) que decide el equipo de IT; no reutilices tu sesión en un servidor.

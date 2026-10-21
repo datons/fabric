@@ -4,7 +4,7 @@ import { connect, errorText, exampleParams, header, headerProblems, lakehouse, r
 
 const [cfgPath = 'fabric.toml', ...given] = process.argv.slice(2);
 const project = await readProject(cfgPath);
-const queriesDir = join(dirname(cfgPath), project.queries_dir ?? 'consultas');
+const queriesDir = join(dirname(cfgPath), project.queries_dir ?? 'queries');
 const files = given.length ? given : (await Array.fromAsync(new Bun.Glob('*.sql').scan(queriesDir))).sort().map((f) => join(queriesDir, f));
 
 /* One connection per lakehouse, opened the first time a query needs it. */

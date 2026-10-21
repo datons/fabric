@@ -14,8 +14,8 @@ from deltalake import DeltaTable
 
 fabric = tomllib.loads(Path("fabric.toml").read_text())["fabric"]
 lakehouses = fabric.get("lakehouses") or {fabric["database"]: fabric}
-cfg = lakehouses[fabric.get("default") or next(iter(lakehouses))]  # o lakehouses["<nombre>"]
-url = f"abfss://{cfg['workspace_id']}@onelake.dfs.fabric.microsoft.com/{cfg['lakehouse_id']}/Tables/dbo/<tabla>"
+cfg = lakehouses[fabric.get("default") or next(iter(lakehouses))]  # o lakehouses["<name>"]
+url = f"abfss://{cfg['workspace_id']}@onelake.dfs.fabric.microsoft.com/{cfg['lakehouse_id']}/Tables/dbo/<table>"
 df = DeltaTable(url, storage_options={"use_azure_cli": "true", "use_fabric_endpoint": "true"}).to_pandas()
 ```
 
