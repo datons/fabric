@@ -1,5 +1,6 @@
-/* Comprueba paso a paso el acceso a cada lakehouse de fabric.toml. Uso: bun check.ts [ruta/a/fabric.toml] [lakehouse]. Misma salida que check.py. */
-import { connect, errorText, lakehouse, readProject } from './lib.ts';
+/* Comprueba paso a paso el acceso a cada lakehouse de fabric.toml y avisa de lo que no sigue la estructura actual. Uso: bun check.ts [ruta/a/fabric.toml] [lakehouse] [--layout]; con --layout solo revisa la estructura, sin conectar. Misma salida que check.py. */
+import { dirname } from 'node:path';
+import { connect, errorText, lakehouse, layoutProblems, readProject } from './lib.ts';
 
 const NO_NETWORK = 'No se llega al servidor: comprueba la red o la VPN y repite. Si sigue fallando, IT debe permitir la salida al puerto 1433.';
 
@@ -10,9 +11,20 @@ function step(label: string, passed: boolean, detail = ''): boolean {
 	return passed;
 }
 
-const [path = 'fabric.toml', only] = process.argv.slice(2);
+const layoutOnly = process.argv.includes('--layout');
+const [path = 'fabric.toml', only] = process.argv.slice(2).filter((a) => a !== '--layout');
+
+/* Structure advice: never changes the result, the skill proposes the restructuring. */
+async function printAdvice() {
+	const advice = await layoutProblems(dirname(path), await Bun.file(path).text());
+	console.log(advice.length ? `\nEstructura del proyecto: ${advice.length} avisos (templates/layout.json)\n${advice.map((a) => `[AVISO] ${a}`).join('\n')}` : '\nEstructura del proyecto: al día.');
+}
 const exists = await Bun.file(path).exists();
 if (!step(`Configuración (${path})`, exists, exists ? '' : 'Pide a Claude que lo cree con /fabric:lakehouse: descubre tus lakehouses con tu sesión de Azure.')) process.exit(1);
+if (layoutOnly) {
+	await printAdvice();
+	process.exit(0);
+}
 const project = await readProject(path);
 const names = only ? [only] : Object.keys(project.lakehouses);
 if (!step('Lakehouses configurados', names.length > 0, names.length ? names.join(', ') : 'Añade al menos uno en [fabric.lakehouses.<name>].')) process.exit(1);
@@ -46,6 +58,8 @@ for (const name of names) {
 		step(`Conexión a ${name} (${cfg.database})`, false, `${hint}\n       ${errorText(error)}`);
 	}
 }
+
+await printAdvice();
 
 console.log(ok ? '\nTodo listo.' : '\nAlgo ha fallado: copia este resultado y envíaselo a tu equipo de datos.');
 process.exit(ok ? 0 : 1);

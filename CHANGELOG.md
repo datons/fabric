@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0
+
+- `check --layout` compara el proyecto con la estructura actual y lista cada diferencia con su arreglo: piezas que faltan (`AGENTS.md` con la sección de la skill, `.claude/settings.json`, el paquete uv, consultas, guía de tablas), nombres heredados (`CLAUDE.md`, `consultas/`, `docs/tablas.md`, `salidas/`), scripts sueltos en la raíz, conexiones copiadas y `fabric.toml` de un solo lakehouse. `check` también lo imprime al final, como avisos que no cambian el resultado.
+- Las reglas viven en `templates/layout.json`, que leen las dos versiones de `check`: un cambio de estructura en una versión nueva se hace solo ahí y todos los proyectos lo detectan.
+- La skill comprueba la estructura la primera vez que trabaja en un proyecto en la sesión y propone la reestructuración una vez, en un commit propio y solo si el usuario acepta.
+
 ## 0.6.1
 
 - La plantilla de `AGENTS.md` dice cuándo usar `/fabric:lakehouse`: preguntas con datos, SQL, consultas de `queries/`, código que conecta con el lakehouse, lakehouses nuevos, acceso y Delta.

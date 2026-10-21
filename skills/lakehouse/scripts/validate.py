@@ -66,6 +66,41 @@ def result_problems(meta: dict[str, str], cols: list[str], rows: list[tuple]) ->
     return []
 
 
+LAYOUT_PATH = Path(__file__).parent.parent / "templates" / "layout.json"
+
+
+def layout_problems(directory: Path, config_text: str, layout: dict | None = None) -> list[str]:
+    """What separates the project in `directory` from the current layout (templates/layout.json), as "problem → fix" lines. Advice, not failures: access works with an older layout."""
+    import json
+
+    rules = layout or json.loads(LAYOUT_PATH.read_text())
+    fabric = tomllib.loads(config_text)["fabric"]
+
+    def fill(s: str) -> str:
+        return s.replace("{queries_dir}", str(fabric.get("queries_dir", "queries"))).replace("{tables_guide}", str(fabric.get("tables_guide", "docs/tables.md")))
+
+    problems, missing = [], set()
+    for rule in rules["expected"]:
+        path = fill(rule["path"])
+        if not (directory / path).exists():
+            # One line per missing file, with the fix of its first rule (the one that creates it).
+            if path not in missing:
+                problems.append(f"falta {path} → {fill(rule['fix'])}")
+            missing.add(path)
+        elif "contains" in rule and rule["contains"] not in (directory / path).read_text():
+            problems.append(f"{path} no incluye {rule['contains']} → {fill(rule['fix'])}")
+    problems += [f"{r['path']} es de una estructura anterior → {r['fix']}" for r in rules["legacy"] if (directory / r["path"]).exists()]
+    loose = sorted(f.name for f in directory.glob(rules["loose_root"]["glob"]))
+    if loose:
+        problems.append(f"scripts sueltos en la raíz ({', '.join(loose)}) → {rules['loose_root']['fix']}")
+    copied = sorted({f.relative_to(directory).as_posix() for g in rules["copied_connection"]["globs"] for f in directory.glob(g) if rules["copied_connection"]["pattern"] in f.read_text()})
+    if copied:
+        problems.append(f"conexión repetida en {', '.join(copied)} → {rules['copied_connection']['fix']}")
+    if "lakehouses" not in fabric and "database" in fabric:
+        problems.append(f"fabric.toml con un solo lakehouse bajo [fabric] → {rules['single_lakehouse_form']['fix']}")
+    return problems
+
+
 def main(argv: list[str]) -> int:
     import mssql_python
 

@@ -74,3 +74,33 @@ def test_several_lakehouses_need_default_or_name():
 def test_single_lakehouse_form_is_named_after_its_database():
     project = validate.parse_config('[fabric]\ntenant = "t"\nsql_server = "s"\ndatabase = "lh_x"\n')
     assert validate.lakehouse(project) == {"tenant": "t", "sql_server": "s", "database": "lh_x", "name": "lh_x"}
+
+
+CURRENT = {
+    "AGENTS.md": "Usa /fabric:lakehouse",
+    ".claude/settings.json": '{"enabledPlugins":{"fabric@datons-fabric":true}}',
+    ".gitignore": "output/\n",
+    "pyproject.toml": '[project.scripts]\nquery = "p.lakehouse:main"\n',
+    "queries/.gitkeep": "",
+    "docs/tables.md": "",
+    "random/chart.py": "from p.lakehouse import query\n",
+    "fabric.toml": '[fabric]\ntenant = "t"\n[fabric.lakehouses.a]\nsql_server = "s"\ndatabase = "d"\n',
+}
+
+
+def _project(tmp_path, files):
+    for path, text in files.items():
+        (tmp_path / path).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / path).write_text(text)
+    return tmp_path
+
+
+def test_current_layout_has_no_advice(tmp_path):
+    assert validate.layout_problems(_project(tmp_path, CURRENT), CURRENT["fabric.toml"]) == []
+
+
+def test_legacy_layout_names_each_piece(tmp_path):
+    legacy = {**CURRENT, "CLAUDE.md": "", "consultar.py": "mssql_python.connect(x)", "fabric.toml": '[fabric]\ntenant = "t"\nsql_server = "s"\ndatabase = "d"\n'}
+    problems = validate.layout_problems(_project(tmp_path, legacy), legacy["fabric.toml"])
+    for start in ("CLAUDE.md es de una estructura anterior", "scripts sueltos en la raíz (consultar.py)", "conexión repetida en consultar.py", "fabric.toml con un solo lakehouse"):
+        assert any(p.startswith(start) for p in problems), start

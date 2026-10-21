@@ -1,5 +1,7 @@
 /* Shared by check.ts and validate.ts, and the same connection the TypeScript recipe in references/typescript.md teaches: Tedious with an access token from the user's own Azure CLI session. */
 import { AzureCliCredential } from '@azure/identity';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { Connection, Request, TYPES } from 'tedious';
 
 export interface Lakehouse {
@@ -148,4 +150,48 @@ export function resultProblems(meta: Record<string, string>, columns: string[], 
 export function errorText(error: unknown): string {
 	const e = error as { name?: string; code?: string; message?: string };
 	return `${e.code ?? e.name ?? 'Error'}: ${String(e.message ?? error).slice(0, 300)}`;
+}
+
+interface Rule {
+	path: string;
+	contains?: string;
+	fix: string;
+}
+
+interface Layout {
+	expected: Rule[];
+	legacy: Rule[];
+	loose_root: { glob: string; fix: string };
+	copied_connection: { pattern: string; globs: string[]; fix: string };
+	single_lakehouse_form: { fix: string };
+}
+
+export const LAYOUT_PATH = new URL('../templates/layout.json', import.meta.url).pathname;
+
+/* What separates the project in `dir` from the current layout (templates/layout.json), as "problem → fix" lines. Advice, not failures: access works with an older layout. */
+export async function layoutProblems(dir: string, configText: string, layout?: Layout): Promise<string[]> {
+	const rules = layout ?? ((await Bun.file(LAYOUT_PATH).json()) as Layout);
+	const fabric = (Bun.TOML.parse(configText) as { fabric: Record<string, unknown> }).fabric;
+	const fill = (p: string) => p.replace('{queries_dir}', String(fabric.queries_dir ?? 'queries')).replace('{tables_guide}', String(fabric.tables_guide ?? 'docs/tables.md'));
+	const exists = (p: string) => existsSync(join(dir, p));
+	const problems: string[] = [];
+	const missing = new Set<string>();
+	for (const rule of rules.expected) {
+		const path = fill(rule.path);
+		if (!exists(path)) {
+			/* One line per missing file, with the fix of its first rule (the one that creates it). */
+			if (!missing.has(path)) problems.push(`falta ${path} → ${fill(rule.fix)}`);
+			missing.add(path);
+		}
+		else if (rule.contains && !(await Bun.file(join(dir, path)).text()).includes(rule.contains)) problems.push(`${path} no incluye ${rule.contains} → ${fill(rule.fix)}`);
+	}
+	for (const rule of rules.legacy) if (exists(rule.path)) problems.push(`${rule.path} es de una estructura anterior → ${rule.fix}`);
+	const loose = await Array.fromAsync(new Bun.Glob(rules.loose_root.glob).scan({ cwd: dir }));
+	if (loose.length) problems.push(`scripts sueltos en la raíz (${loose.sort().join(', ')}) → ${rules.loose_root.fix}`);
+	const copied: string[] = [];
+	for (const glob of rules.copied_connection.globs)
+		for await (const f of new Bun.Glob(glob).scan({ cwd: dir })) if ((await Bun.file(join(dir, f)).text()).includes(rules.copied_connection.pattern)) copied.push(f);
+	if (copied.length) problems.push(`conexión repetida en ${[...new Set(copied)].sort().join(', ')} → ${rules.copied_connection.fix}`);
+	if (!fabric.lakehouses && fabric.database) problems.push(`fabric.toml con un solo lakehouse bajo [fabric] → ${rules.single_lakehouse_form.fix}`);
+	return problems;
 }

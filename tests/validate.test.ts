@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { REQUIRED, header, headerProblems, lakehouse, namedParams, parseConfig, resultProblems } from '../skills/lakehouse/scripts/lib.ts';
+import { join } from 'node:path';
+import { REQUIRED, header, headerProblems, lakehouse, layoutProblems, namedParams, parseConfig, resultProblems } from '../skills/lakehouse/scripts/lib.ts';
 
 const GOOD = `-- description: energía diaria por unidad
 -- params: unidad, desde
@@ -75,5 +76,44 @@ database = "lh_pro"
 	it('reads the single-lakehouse form as one lakehouse named after its database', () => {
 		const project = parseConfig('[fabric]\ntenant = "t"\nsql_server = "s"\ndatabase = "lh_x"\n');
 		expect(lakehouse(project)).toMatchObject({ name: 'lh_x', sql_server: 's', tenant: 't' });
+	});
+});
+
+describe('project layout advice (templates/layout.json)', () => {
+	const { mkdtempSync, mkdirSync, writeFileSync } = require('node:fs') as typeof import('node:fs');
+	const { tmpdir } = require('node:os') as typeof import('node:os');
+
+	function project(files: Record<string, string>): string {
+		const dir = mkdtempSync(join(tmpdir(), 'fabric-layout-'));
+		for (const [path, text] of Object.entries(files)) {
+			mkdirSync(join(dir, path, '..'), { recursive: true });
+			writeFileSync(join(dir, path), text);
+		}
+		return dir;
+	}
+
+	const CURRENT = {
+		'AGENTS.md': 'Usa /fabric:lakehouse',
+		'.claude/settings.json': '{"enabledPlugins":{"fabric@datons-fabric":true}}',
+		'.gitignore': 'output/\n',
+		'pyproject.toml': '[project.scripts]\nquery = "p.lakehouse:main"\n',
+		'queries/.gitkeep': '',
+		'docs/tables.md': '',
+		'random/chart.py': 'from p.lakehouse import query\n',
+		'fabric.toml': '[fabric]\ntenant = "t"\n[fabric.lakehouses.a]\nsql_server = "s"\ndatabase = "d"\n'
+	};
+
+	it('has nothing to say about a current project', async () => {
+		const dir = project(CURRENT);
+		expect(await layoutProblems(dir, CURRENT['fabric.toml'])).toEqual([]);
+	});
+
+	it('names each legacy piece with its fix', async () => {
+		const legacy = { ...CURRENT, 'CLAUDE.md': '', 'consultar.py': 'mssql_python.connect(x)', 'fabric.toml': '[fabric]\ntenant = "t"\nsql_server = "s"\ndatabase = "d"\n' };
+		const problems = await layoutProblems(project(legacy), legacy['fabric.toml']);
+		expect(problems.some((p) => p.startsWith('CLAUDE.md es de una estructura anterior'))).toBe(true);
+		expect(problems.some((p) => p.startsWith('scripts sueltos en la raíz (consultar.py)'))).toBe(true);
+		expect(problems.some((p) => p.startsWith('conexión repetida en consultar.py'))).toBe(true);
+		expect(problems.some((p) => p.startsWith('fabric.toml con un solo lakehouse'))).toBe(true);
 	});
 });

@@ -1,0 +1,23 @@
+{
+  "$comment": "Estructura actual de un proyecto configurado con /fabric:lakehouse. La leen check.ts y check.py: un cambio de estructura en una versión nueva del plugin se hace solo aquí. {queries_dir} y {tables_guide} se sustituyen por los valores de fabric.toml.",
+  "expected": [
+    { "path": "AGENTS.md", "fix": "Crea AGENTS.md desde templates/AGENTS.md." },
+    { "path": "AGENTS.md", "contains": "/fabric:lakehouse", "fix": "Añade a AGENTS.md la sección «Datos» de templates/AGENTS.md: cuándo usar /fabric:lakehouse." },
+    { "path": ".claude/settings.json", "contains": "fabric@datons-fabric", "fix": "Copia templates/.claude/settings.json para que el plugin se instale al abrir el proyecto." },
+    { "path": ".gitignore", "contains": "output/", "fix": "Añade output/ a .gitignore (templates/.gitignore)." },
+    { "path": "pyproject.toml", "contains": ".lakehouse:main", "fix": "Crea el paquete uv con la conexión en src/<project>/lakehouse.py y el comando query (SKILL.md, apartado 3)." },
+    { "path": "{queries_dir}", "fix": "Crea la carpeta de consultas ({queries_dir}/)." },
+    { "path": "{tables_guide}", "fix": "Documenta las tablas que usas en {tables_guide} (references/setup.md, paso 6)." }
+  ],
+  "legacy": [
+    { "path": "CLAUDE.md", "fix": "git mv CLAUDE.md AGENTS.md; si ya hay AGENTS.md, fusiónalos." },
+    { "path": ".claude/CLAUDE.md", "fix": "git mv .claude/CLAUDE.md AGENTS.md; si ya hay AGENTS.md, fusiónalos." },
+    { "path": "consultas", "fix": "git mv consultas queries y queries_dir = \"queries\" en fabric.toml." },
+    { "path": "docs/tablas.md", "fix": "git mv docs/tablas.md docs/tables.md y tables_guide = \"docs/tables.md\" en fabric.toml." },
+    { "path": "docs/marca.md", "fix": "git mv docs/marca.md docs/brand.md." },
+    { "path": "salidas", "fix": "Renombra salidas/ a output/ y actualiza .gitignore." }
+  ],
+  "loose_root": { "glob": "*.py", "fix": "Mueve los scripts a random/ (puntuales) o a un módulo de src/<project>/ (reutilizables)." },
+  "copied_connection": { "pattern": "mssql_python.connect", "globs": ["*.py", "random/**/*.py"], "fix": "Importa query() o query_file() de src/<project>/lakehouse.py en vez de repetir la conexión." },
+  "single_lakehouse_form": { "fix": "Pasa sql_server y database a un bloque [fabric.lakehouses.<name>] y pon default (references/setup.md, paso 3)." }
+}

@@ -65,6 +65,18 @@ Comprueba todos los lakehouses del fichero; añade su nombre para comprobar solo
 
 El inicio de sesión es `az login --tenant <tenant>` (con `--allow-no-subscriptions` si la cuenta no tiene suscripción de Azure). Fabric aplica a cada consulta los permisos del propio usuario.
 
+## 2b. Comprueba la estructura del proyecto
+
+La primera vez que uses esta skill en un proyecto durante la sesión, ejecuta `bun scripts/check.ts fabric.toml --layout` (sin conectar; con Python, `uv run scripts/check.py fabric.toml --layout`). Compara el proyecto con la estructura actual, definida en `templates/layout.json`, y lista cada diferencia con su arreglo. `check` sin `--layout` también imprime estos avisos al final.
+
+Si hay avisos, antes de la tarea propón la reestructuración **una vez**:
+
+1. Enseña la lista de cambios concretos: qué se mueve con `git mv`, qué se crea desde `templates/`, qué imports y claves de `fabric.toml` cambian.
+2. Espera a que el usuario acepte. Si dice que no, sigue con la tarea y no lo vuelvas a proponer en esta sesión.
+3. Si acepta, aplícalo en un commit propio, separado de la tarea, sin cambiar lo que hace el código. Vuelve a ejecutar `--layout` hasta que diga «al día» y comprueba que los scripts movidos siguen funcionando.
+
+En un repositorio con una estructura propia deliberada (una aplicación o un producto que usa este plugin), menciona solo los avisos de datos (`AGENTS.md`, `fabric.toml`, consultas) y no propongas mover su código.
+
 ## 3. Conecta y consulta desde Python
 
 Para TypeScript y SvelteKit, sigue `references/typescript.md`. En Python, el proyecto es un paquete de uv:
