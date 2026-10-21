@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0
+
+- «Configura este proyecto» deja el proyecto completo, no solo `fabric.toml`: comprueba el acceso, crea `AGENTS.md`, `.claude/settings.json`, `.gitignore`, el paquete uv con la conexión y el comando `query`, `random/`, `queries/`, `docs/tables.md` con las tablas que usará el usuario, `output/` fuera de git y el primer commit (`references/setup.md`). En un proyecto existente solo añade lo que falta.
+- Las plantillas pasan a `skills/lakehouse/templates/`, para que la skill las use al configurar, con `AGENTS.md` y `.gitignore` nuevos.
+
 ## 0.5.0
 
 - Nombres de código en inglés; mensajes y documentación, en el idioma del usuario. `query_file()` sustituye a `consulta()` y el comando `query` a `consultar`. Plantilla y valores por defecto: `queries/`, `docs/tables.md`, `docs/brand.md`, `output/` y `validated: pending`. Las referencias de la skill pasan a `references/queries.md` y `references/setup.md`.

@@ -31,15 +31,20 @@ It is also listed in the [`datons/agent-plugins`](https://github.com/datons/agen
 
 ## Start a team repository
 
-Ask Claude `/fabric:lakehouse configura este proyecto` in an empty folder: it lists the lakehouses your Microsoft account can see (`scripts/discover.ts`), asks which ones you need, and writes `fabric.toml` with one block per lakehouse. Or copy [`templates/`](templates) into a new repository and fill it in by hand:
+Ask Claude `/fabric:lakehouse configura este proyecto` in an empty folder: it lists the lakehouses your Microsoft account can see (`scripts/discover.ts`), asks which ones you need, writes `fabric.toml` with one block per lakehouse, checks your access and lays out the project (`AGENTS.md`, a uv package with the connection, `random/`, `queries/`, `docs/tables.md`). Or copy [`skills/lakehouse/templates/`](skills/lakehouse/templates) into a new repository and fill it in by hand:
 
 ```
-your-team-queries/
-├── .claude/settings.json   # installs this plugin for anyone who opens the repo
-├── fabric.toml             # tenant and one block per lakehouse (SQL endpoint, database)
-├── docs/tables.md          # what each table means: grain, units, traps
-├── docs/brand.md           # brand for reports: colours, typeface, logo
-└── queries/*.sql         # the team's validated queries
+your-project/
+├── AGENTS.md                    # project instructions for any coding agent
+├── .claude/settings.json        # installs this plugin for anyone who opens the repo
+├── fabric.toml                  # tenant and one block per lakehouse (SQL endpoint, database)
+├── pyproject.toml               # uv package with the `query` command
+├── src/<project>/lakehouse.py   # the connection: query(), query_file()
+├── random/                      # ad hoc scripts
+├── queries/*.sql                # the team's validated (or pending) queries
+├── docs/tables.md               # what each table means: grain, units, traps
+├── docs/brand.md                # optional: brand for reports
+└── output/                      # generated, not in git
 ```
 
 Then ask Claude to check your access (`/fabric:lakehouse comprueba mi acceso`), or just ask a question about the data.

@@ -1,6 +1,6 @@
 ---
 name: lakehouse
-description: "Consulta uno o varios lakehouses de Microsoft Fabric en el ordenador del usuario y con su propia identidad de Microsoft: cuadros de mando en SvelteKit/TypeScript con tedious y análisis puntuales en Python con mssql-python, más tablas Delta de OneLake con deltalake. Configura el proyecto descubriendo los lakehouses que ve su cuenta, prioriza las consultas validadas del equipo y comprueba el acceso. Use when the project has a fabric.toml, or the user says 'configura Fabric en este proyecto', 'conecta este proyecto al datalake', 'consulta el lakehouse', 'qué tablas hay en Fabric', 'lee la tabla X del datalake', 'comprueba mi acceso a Fabric', 'conéctate a OneLake', 'guarda esta consulta como validada', 'haz un cuadro de mando con los datos del lakehouse'."
+description: "Consulta uno o varios lakehouses de Microsoft Fabric en el ordenador del usuario y con su propia identidad de Microsoft: cuadros de mando en SvelteKit/TypeScript con tedious y análisis puntuales en Python con mssql-python, más tablas Delta de OneLake con deltalake. Configura el proyecto descubriendo los lakehouses que ve su cuenta, prioriza las consultas validadas del equipo y comprueba el acceso. Use when the project has a fabric.toml, or the user says 'configura este proyecto', 'configura esta carpeta como mi proyecto', 'configura Fabric en este proyecto', 'conecta este proyecto al datalake', 'consulta el lakehouse', 'qué tablas hay en Fabric', 'lee la tabla X del datalake', 'comprueba mi acceso a Fabric', 'conéctate a OneLake', 'guarda esta consulta como validada', 'haz un cuadro de mando con los datos del lakehouse'."
 argument-hint: "[pregunta sobre los datos]"
 ---
 
@@ -19,7 +19,7 @@ Las rutas `scripts/...` y `references/...` son relativas a la carpeta de esta sk
 
 | Cuándo | Referencia |
 |---|---|
-| Si falta `fabric.toml` o hay que añadir un lakehouse | `references/setup.md` |
+| Si falta `fabric.toml`, la carpeta está vacía, piden configurar el proyecto o añadir un lakehouse | `references/setup.md` |
 | Antes de escribir SQL a medida | `references/sql.md` |
 | Cuadros de mando y aplicaciones en SvelteKit | `references/typescript.md` |
 | Al usar, guardar o validar consultas del equipo | `references/queries.md` |
@@ -27,7 +27,7 @@ Las rutas `scripts/...` y `references/...` son relativas a la carpeta de esta sk
 
 ## 1. Lee o crea la configuración del proyecto
 
-Busca `fabric.toml` en la raíz del proyecto. Si no existe, créalo tú con la sesión del usuario, sin pedirle valores a mano: sigue `references/setup.md`.
+Busca `fabric.toml` en la raíz del proyecto. Si no existe, o el usuario pide configurar el proyecto, sigue `references/setup.md`: crea `fabric.toml` con la sesión del usuario (sin pedirle valores a mano), comprueba el acceso y deja la estructura completa del proyecto, con su `AGENTS.md`.
 
 ```toml
 [fabric]
