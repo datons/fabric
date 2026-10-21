@@ -4,7 +4,15 @@
 
 ## Datos
 
-- Lakehouses en `fabric.toml`; se consultan con `/fabric:lakehouse` y la identidad de cada persona (Azure CLI). Sin secretos en el repositorio.
+Todo lo que toque los datos pasa por la skill `/fabric:lakehouse` (plugin `fabric`, que `.claude/settings.json` instala al abrir el proyecto). Úsala para:
+
+- responder una pregunta con datos, explorar tablas o escribir SQL;
+- usar, guardar o validar una consulta de `queries/`;
+- escribir código que conecte con el lakehouse, en `src/`, `random/` o `app/`;
+- añadir un lakehouse, comprobar el acceso o entender un error de conexión;
+- leer tablas Delta de OneLake.
+
+- Lakehouses en `fabric.toml`; cada persona consulta con su propia identidad (Azure CLI). Sin secretos en el repositorio.
 - `docs/tables.md`: qué significa cada tabla (grano, unidades, trampas). Léelo antes de escribir SQL.
 - `queries/`: una consulta por fichero `.sql` con su cabecera. Si una encaja, se usa tal cual; si no, la nueva se guarda con `validated: pending` y la valida el revisor.
 

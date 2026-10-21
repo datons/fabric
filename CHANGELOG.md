@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1
+
+- La plantilla de `AGENTS.md` dice cuándo usar `/fabric:lakehouse`: preguntas con datos, SQL, consultas de `queries/`, código que conecta con el lakehouse, lakehouses nuevos, acceso y Delta.
+
 ## 0.6.0
 
 - «Configura este proyecto» deja el proyecto completo, no solo `fabric.toml`: comprueba el acceso, crea `AGENTS.md`, `.claude/settings.json`, `.gitignore`, el paquete uv con la conexión y el comando `query`, `random/`, `queries/`, `docs/tables.md` con las tablas que usará el usuario, `output/` fuera de git y el primer commit (`references/setup.md`). En un proyecto existente solo añade lo que falta.
