@@ -28,10 +28,11 @@ args = [a for a in sys.argv[1:] if a != "--layout"]
 path = Path(args[0] if args else "fabric.toml")
 
 
-def print_advice() -> None:
-    """Structure advice: never changes the result, the skill proposes the restructuring."""
+def print_advice() -> int:
+    """Structure advice: never changes the result, the skill proposes the restructuring. Returns how many remain."""
     advice = layout_problems(path.parent, path.read_text())
     print(f"\nEstructura del proyecto: {len(advice)} avisos (templates/layout.json)\n" + "\n".join(f"[AVISO] {a}" for a in advice) if advice else "\nEstructura del proyecto: al día.")
+    return len(advice)
 
 if not step(f"Configuración ({path})", path.exists(), "" if path.exists() else "Pide a Claude que lo cree con /fabric:lakehouse: descubre tus lakehouses con tu sesión de Azure."):
     sys.exit(1)
@@ -68,7 +69,12 @@ for name in names:
         hint = f"Inicia sesión: az login --tenant {cfg['tenant']} --allow-no-subscriptions" if signed_out else NO_NETWORK if unreachable else "Pide a IT permiso de lectura sobre el SQL analytics endpoint."
         step(f"Conexión a {name} ({cfg['database']})", False, f"{hint}\n       {type(e).__name__}: {msg[:300]}")
 
-print_advice()
+pending = print_advice()
 
-print("\nTodo listo." if ok else "\nAlgo ha fallado: copia este resultado y envíaselo a tu equipo de datos.")
+if not ok:
+    print("\nAlgo ha fallado: copia este resultado y envíaselo a tu equipo de datos.")
+elif pending:
+    print(f"\nAcceso listo. Quedan {pending} avisos de estructura: pide a Claude que proponga la reestructuración con /fabric:lakehouse.")
+else:
+    print("\nTodo listo.")
 sys.exit(0 if ok else 1)

@@ -15,9 +15,10 @@ const layoutOnly = process.argv.includes('--layout');
 const [path = 'fabric.toml', only] = process.argv.slice(2).filter((a) => a !== '--layout');
 
 /* Structure advice: never changes the result, the skill proposes the restructuring. */
-async function printAdvice() {
+async function printAdvice(): Promise<number> {
 	const advice = await layoutProblems(dirname(path), await Bun.file(path).text());
 	console.log(advice.length ? `\nEstructura del proyecto: ${advice.length} avisos (templates/layout.json)\n${advice.map((a) => `[AVISO] ${a}`).join('\n')}` : '\nEstructura del proyecto: al día.');
+	return advice.length;
 }
 const exists = await Bun.file(path).exists();
 if (!step(`Configuración (${path})`, exists, exists ? '' : 'Pide a Claude que lo cree con /fabric:lakehouse: descubre tus lakehouses con tu sesión de Azure.')) process.exit(1);
@@ -59,7 +60,13 @@ for (const name of names) {
 	}
 }
 
-await printAdvice();
+const pending = await printAdvice();
 
-console.log(ok ? '\nTodo listo.' : '\nAlgo ha fallado: copia este resultado y envíaselo a tu equipo de datos.');
+console.log(
+	!ok
+		? '\nAlgo ha fallado: copia este resultado y envíaselo a tu equipo de datos.'
+		: pending
+			? `\nAcceso listo. Quedan ${pending} avisos de estructura: pide a Claude que proponga la reestructuración con /fabric:lakehouse.`
+			: '\nTodo listo.'
+);
 process.exit(ok ? 0 : 1);

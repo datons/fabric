@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.1
+
+- `references/typescript.md` para SvelteKit 3, lo que instala hoy `bunx sv create`: imports con `#lib/....ts` (ya no hay `$lib`), configuración en `sveltekit({...})` de `vite.config.ts` (ya no hay `svelte.config.js`) y variables de entorno en `src/env.ts` con `defineEnvVars`, importadas de `$app/env/private` y leídas del `.env` de la raíz con `env: { dir: '..' }`. Incluye cómo crear la aplicación en `app/` y qué cambia en un proyecto que viene de SvelteKit 2.
+- El módulo de servidor busca `fabric.toml` subiendo carpetas y lee `queries/` desde esa raíz: desde `app/` ya no da `ENOENT`. Lee `fabric.toml` en la primera consulta, así que `bun run build` no necesita ni `fabric.toml` ni sesión de Azure.
+- Un cliente que exige su clave al crearse (Joltio) se crea dentro de `load`, no al importar el módulo, para que `bun run build` no falle sin la clave.
+- `check` ya no dice «Todo listo.» si quedan avisos de estructura: dice que el acceso está listo y cuántos avisos quedan.
+
 ## 0.7.0
 
 - `check --layout` compara el proyecto con la estructura actual y lista cada diferencia con su arreglo: piezas que faltan (`AGENTS.md` con la sección de la skill, `.claude/settings.json`, el paquete uv, consultas, guía de tablas), nombres heredados (`CLAUDE.md`, `consultas/`, `docs/tablas.md`, `salidas/`), scripts sueltos en la raíz, conexiones copiadas y `fabric.toml` de un solo lakehouse. `check` también lo imprime al final, como avisos que no cambian el resultado.
