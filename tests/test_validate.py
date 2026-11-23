@@ -104,3 +104,14 @@ def test_legacy_layout_names_each_piece(tmp_path):
     problems = validate.layout_problems(_project(tmp_path, legacy), legacy["fabric.toml"])
     for start in ("CLAUDE.md es de una estructura anterior", "scripts sueltos en la raíz (consultar.py)", "conexión repetida en consultar.py", "fabric.toml con un solo lakehouse"):
         assert any(p.startswith(start) for p in problems), start
+
+
+def test_driver_hint_openssl_on_mac_points_to_homebrew_fix():
+    msg = "RuntimeError: [Microsoft][ODBC Driver 18 for SQL Server]SSL Provider: [OpenSSL library could not be loaded, make sure OpenSSL 1.0, 1.1, or 3.0 is installed]"
+    hint = validate.driver_hint(msg, "darwin")
+    assert "openssl@3" in hint and "opt/openssl" in hint
+    assert "IT" not in hint
+
+
+def test_driver_hint_ignores_permission_errors():
+    assert validate.driver_hint("Login failed for user '<token-identified principal>'", "darwin") is None

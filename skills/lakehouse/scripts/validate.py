@@ -69,6 +69,20 @@ def result_problems(meta: dict[str, str], cols: list[str], rows: list[tuple]) ->
 LAYOUT_PATH = Path(__file__).parent.parent / "templates" / "layout.json"
 
 
+OPENSSL_MAC = (
+    "El driver de SQL Server no encuentra OpenSSL 3: Homebrew apunta su `openssl` a la versión 4, que el driver no admite. "
+    "Arréglalo con: brew install openssl@3 && ln -sfn \"$(brew --prefix openssl@3)\" \"$(brew --prefix)/opt/openssl\" "
+    "(un `brew upgrade openssl@4` puede deshacerlo: repítelo si vuelve a fallar)."
+)
+
+
+def driver_hint(message: str, platform: str = sys.platform) -> str | None:
+    """Arreglo concreto para un fallo del driver que no es de permisos, o None si no se reconoce."""
+    if "OpenSSL library could not be loaded" in message:
+        return OPENSSL_MAC if platform == "darwin" else "El driver de SQL Server no encuentra OpenSSL 1.1 o 3: instala OpenSSL 3 con el gestor de paquetes del sistema."
+    return None
+
+
 def layout_problems(directory: Path, config_text: str, layout: dict | None = None) -> list[str]:
     """What separates the project in `directory` from the current layout (templates/layout.json), as "problem → fix" lines. Advice, not failures: access works with an older layout."""
     import json

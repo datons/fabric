@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 import mssql_python
-from validate import lakehouse, layout_problems, parse_config
+from validate import driver_hint, lakehouse, layout_problems, parse_config
 
 NO_NETWORK = "No se llega al servidor: comprueba la red o la VPN y repite. Si sigue fallando, IT debe permitir la salida al puerto 1433."
 
@@ -66,7 +66,7 @@ for name in names:
         msg = str(e)
         signed_out = "Credential" in msg or "az login" in msg
         unreachable = any(s in msg for s in ("TCP Provider", "timeout", "Timeout", "timed out", "Login timeout"))
-        hint = f"Inicia sesión: az login --tenant {cfg['tenant']} --allow-no-subscriptions" if signed_out else NO_NETWORK if unreachable else "Pide a IT permiso de lectura sobre el SQL analytics endpoint."
+        hint = driver_hint(msg) or (f"Inicia sesión: az login --tenant {cfg['tenant']} --allow-no-subscriptions" if signed_out else NO_NETWORK if unreachable else "Pide a IT permiso de lectura sobre el SQL analytics endpoint.")
         step(f"Conexión a {name} ({cfg['database']})", False, f"{hint}\n       {type(e).__name__}: {msg[:300]}")
 
 pending = print_advice()

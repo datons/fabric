@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.2
+
+- `check.py` reconoce el fallo «OpenSSL library could not be loaded» del driver de `mssql-python` en macOS (busca OpenSSL 3 en `$(brew --prefix)/opt/openssl`, que Homebrew apunta ahora a OpenSSL 4) y da la orden que lo arregla, en lugar de remitir a IT por permisos.
+
 ## 0.7.1
 
 - `references/typescript.md` para SvelteKit 3, lo que instala hoy `bunx sv create`: imports con `#lib/....ts` (ya no hay `$lib`), configuración en `sveltekit({...})` de `vite.config.ts` (ya no hay `svelte.config.js`) y variables de entorno en `src/env.ts` con `defineEnvVars`, importadas de `$app/env/private` y leídas del `.env` de la raíz con `env: { dir: '..' }`. Incluye cómo crear la aplicación en `app/` y qué cambia en un proyecto que viene de SvelteKit 2.

@@ -45,7 +45,7 @@ Para añadir un lakehouse a un proyecto que ya tiene `fabric.toml`, repite el pa
 
 ## 4. Comprueba el acceso
 
-`bun scripts/check.ts fabric.toml` debe dar OK en cada lakehouse. Si falla, enseña el arreglo que imprime y no sigas hasta resolverlo o hasta que el usuario decida continuar sin acceso.
+`bun scripts/check.ts fabric.toml` debe dar OK en cada lakehouse. Si falla, enseña el arreglo que imprime y no sigas hasta resolverlo o hasta que el usuario decida continuar sin acceso. Si una consulta de Python falla en un Mac con «OpenSSL library could not be loaded», ejecuta `uv run scripts/check.py fabric.toml`: el driver de `mssql-python` busca OpenSSL 3 donde Homebrew ya instala la versión 4, y la comprobación imprime la orden que lo arregla. No es un problema de permisos.
 
 ## 5. Crea la estructura
 
